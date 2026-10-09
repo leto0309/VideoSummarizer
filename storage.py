@@ -1,0 +1,100 @@
+"""Only marked UUID task directories under this project's temp may be deleted."""
+from datetime import datetime, timezone
+import json
+import re
+import shutil
+import time
+import uuid
+from pathlib import Path
+from config import TEMP, TEMP_LIMIT, RESERVE
+
+MARKER = 'videosummarizer-task-v1'
+
+
+def _unsafe(path):
+    return path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction()) or bool(
+        getattr(path.lstat(), 'st_file_attributes', 0) & 0x400)
+
+
+def size(root=TEMP):
+    if not root.exists():
+        return 0
+    if _unsafe(root):
+        raise RuntimeError('拒絕使用連結或 junction 作為暫存目錄')
+    total = 0
+    for entry in root.rglob('*'):
+        if _unsafe(entry):
+            raise RuntimeError('暫存目錄含連結，停止處理以保護非專案檔案')
+        if entry.is_file():
+            total += entry.stat().st_size
+    return total
+
+
+def guard(extra=0, root=TEMP):
+    if size(root) + extra > TEMP_LIMIT - RESERVE:
+        raise RuntimeError('暫存接近 5 GB 上限；已停止。未滿 24 小時的失敗暫存會保留，請稍後重試。')
+
+
+def _read(task):
+    if not re.fullmatch(r'[0-9a-f]{32}', task.name) or _unsafe(task):
+        return None
+    marker = task / 'task.json'
+    if not marker.is_file() or _unsafe(marker):
+        return None
+    try:
+        data = json.loads(marker.read_text(encoding='utf-8'))
+        return data if data.get('owner') == MARKER and data.get('id') == task.name else None
+    except (OSError, ValueError):
+        return None
+
+
+def remove_task(task, root=TEMP):
+    task, root = Path(task), Path(root)
+    if root.resolve() != root.absolute() or task.resolve().parent != root.resolve() or not _read(task):
+        raise RuntimeError('拒絕清理非本專案暫存')
+    size(task)  # reject all reparse points before recursive removal
+    shutil.rmtree(task)
+
+
+def cleanup(root=TEMP, now=None):
+    root.mkdir(parents=True, exist_ok=True)
+    size(root)
+    now = time.time() if now is None else now
+    for task in root.iterdir():
+        if not task.is_dir():
+            continue
+        data = _read(task)
+        if not data:
+            continue
+        if data['status'] == 'success':
+            remove_task(task, root)
+        elif data['status'] == 'running':
+            # Called while holding the global pipeline lock: prior process was interrupted.
+            data.update(status='failed', failed_at=now, error='先前程序中斷')
+            (task / 'task.json').write_text(json.dumps(data, ensure_ascii=False), encoding='utf-8')
+        elif data['status'] == 'failed' and now - data.get('failed_at', now) >= 86400:
+            remove_task(task, root)
+
+
+class Task:
+    def __init__(self):
+        cleanup()
+        guard()
+        self.id = uuid.uuid4().hex
+        self.path = TEMP / self.id
+        self.path.mkdir()
+        self.data = {'owner': MARKER, 'id': self.id, 'status': 'running',
+                     'created_at': datetime.now(timezone.utc).isoformat()}
+        self.save()
+
+    def save(self):
+        (self.path / 'task.json').write_text(json.dumps(self.data, ensure_ascii=False, indent=2), encoding='utf-8')
+
+    def fail(self, error):
+        self.data.update(status='failed', failed_at=time.time(), error=str(error))
+        self.save()
+
+    def success(self):
+        self.data.update(status='success')
+        self.save()
+        remove_task(self.path)

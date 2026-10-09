@@ -1,0 +1,31 @@
+name: Windows tests
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  unit-tests:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    env:
+      PYTHONIOENCODING: utf-8
+      OLLAMA_NO_CLOUD: '1'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+          architecture: x64
+      - run: python -m pip install -r requirements.txt
+      - run: python -m unittest discover -s tests -v
+      - name: Import web application without inference
+        run: |
+          @'
+          from streamlit.testing.v1 import AppTest
+          app = AppTest.from_file('app.py').run(timeout=30)
+          assert not app.exception, [item.message for item in app.exception]
+          '@ | python -

@@ -1,0 +1,12 @@
+# Direct dependencies from the tested Windows / Python 3.11 environment.
+# yt-dlp nightly is intentionally pinned: the stable build failed the test video.
+streamlit==1.65.0
+yt-dlp[default]==2026.9.27.232945.dev0
+yt-dlp-ejs==0.8.0
+faster-whisper==1.2.1
+ctranslate2==4.8.2
+requests==2.34.2
+srt==3.5.3
+imageio-ffmpeg==0.6.0
+filelock==3.32.7
+opencc-python-reimplemented==0.1.7
