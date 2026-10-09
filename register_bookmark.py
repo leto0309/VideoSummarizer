@@ -4,11 +4,12 @@ from pathlib import Path
 import subprocess
 import sys
 import winreg
+from config import PYTHONW
 
 ROOT = Path(__file__).resolve().parent
 KEY = r'Software\Classes\videosummarizer'
 COMMAND_KEY = KEY + r'\shell\open\command'
-COMMAND = subprocess.list2cmdline([str(ROOT / '.venv' / 'Scripts' / 'pythonw.exe'),
+COMMAND = subprocess.list2cmdline([str(PYTHONW),
                                   str(ROOT / 'bookmark_launcher.py')]) + ' "%1"'
 
 
@@ -27,7 +28,7 @@ def install():
                 raise RuntimeError('videosummarizer 協議已被其他設定使用；未覆蓋。')
     except FileNotFoundError:
         pass
-    for file in (ROOT / '.venv' / 'Scripts' / 'pythonw.exe', ROOT / 'bookmark_launcher.py'):
+    for file in (PYTHONW, ROOT / 'bookmark_launcher.py'):
         if not file.is_file():
             raise RuntimeError('缺少必要檔案：' + str(file))
     with winreg.CreateKey(winreg.HKEY_CURRENT_USER, KEY) as key:

@@ -2,6 +2,10 @@
 setlocal
 chcp 65001 >nul
 cd /d "%~dp0"
+if exist "VideoSummarizer.exe" (
+  start "" "VideoSummarizer.exe"
+  exit /b 0
+)
 set PYTHONIOENCODING=utf-8
 echo VideoSummarizer setup downloads free dependencies and local AI models.
 echo Downloads can require several GB. No paid API or cloud inference.

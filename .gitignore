@@ -17,3 +17,6 @@ cookies*.txt
 bookmark-settings.json
 .pipeline.lock
 .codex-created
+runtime/
+portable-ready.json
+build/

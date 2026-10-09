@@ -12,7 +12,7 @@ def build(version):
         raise ValueError('Invalid release version')
     root = Path(__file__).resolve().parents[1]
     tracked = subprocess.check_output(['git', 'ls-files', '-z'], cwd=root).decode('utf-8').split('\0')
-    blocked = {'.git', '.venv', 'models', 'tools', 'temp', 'outputs', 'logs', 'dist', '__pycache__'}
+    blocked = {'.git', '.venv', 'runtime', 'models', 'tools', 'temp', 'outputs', 'logs', 'build', 'dist', '__pycache__'}
     destination = root / 'dist'
     destination.mkdir(exist_ok=True)
     archive = destination / f'VideoSummarizer-{version}-source.zip'

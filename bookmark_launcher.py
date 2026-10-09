@@ -14,11 +14,11 @@ import webbrowser
 
 import requests
 from launcher import owned_process
+from config import PYTHON
 
 ROOT = Path(__file__).resolve().parent
 WEB_URL = 'http://127.0.0.1:8501/'
 OLLAMA_URL = 'http://127.0.0.1:11435'
-PYTHON = ROOT / '.venv' / 'Scripts' / 'python.exe'
 URI = 'videosummarizer://open'
 
 

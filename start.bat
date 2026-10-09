@@ -1,6 +1,10 @@
 @echo off
 setlocal
 cd /d "%~dp0"
+if exist "VideoSummarizer.exe" (
+  start "" "VideoSummarizer.exe"
+  exit /b 0
+)
 set PYTHONIOENCODING=utf-8
 set OLLAMA_NO_CLOUD=1
 if not exist ".venv\Scripts\python.exe" (

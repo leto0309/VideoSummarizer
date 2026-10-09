@@ -2,9 +2,24 @@
 
 Windows 免費本機影片摘要工具：Bilibili / b23.tv / YouTube、字幕優先、繁體中文摘要、可選畫面分析。
 
-**v0.1.0 是原始碼預覽版，需要預先安裝 64 位 Python 3.11。尚未提供免 Python 的 EXE 安裝包。** AI 推論在你的電腦上進行；下載影片、依賴與模型仍需網路。沒有付費 API，不使用 Ollama cloud。
+**v0.2.0 提供 Windows x64 便攜版，內置 Python 3.11.17，無需預先安裝 Python。** 解壓後雙擊 `VideoSummarizer.exe`。首次使用仍需同意自動下載影片/語音依賴、Ollama、Node.js 和模型；完成後直接啟動本機網頁。沒有付費 API，不使用 Ollama cloud。
 
 ## 下載與安裝
+
+### 一般使用者：免預裝 Python 的 Windows 便攜版
+
+1. 從 [Releases](https://github.com/leto0309/VideoSummarizer/releases) 下載 **VideoSummarizer-v0.2.0-windows-x64.zip**，完整解壓到有寫入權限的本機資料夾，勿直接在 ZIP 內執行。
+2. 雙擊 **VideoSummarizer.exe**。首次會詢問是否允許下載免費依賴和模型；同意後在進度視窗自動配置，無需手動安裝 Python 或輸入 pip 指令。取消時不下載。
+3. 配置成功後自動開啟瀏覽器。之後雙擊同一 EXE 即可啟動或重用此資料夾的背景服務。
+4. 可選執行 `install-bookmark.bat` 安裝目前使用者的啟動書籤；需先完成首次配置。
+
+便攜包內置完整 CPython、原生 .NET Framework 啟動器和預製 srt wheel；其餘 Python 套件、FFmpeg、Ollama、Node.js、CUDA 執行庫和模型於首次同意後下載到軟體資料夾。依賴採 wheel 安裝，首次配置不需編譯器。這不是完全離線包。目標 Windows 10 22H2 / Windows 11 x64（系統內建 .NET Framework 4.8）；不註冊系統 Python、不改全域 PATH、不需要管理員權限。使用 Astral python-build-standalone 20261009 的 CPython 3.11.17，構建時核對固定 SHA256。
+
+進度視窗顯示配置與錯誤，進行中請保持開啟。成功後可關閉進度視窗，背景服務仍會運行；日誌保留在 `logs/`。首次語音轉錄再下載 Whisper small。下載失敗可重新啟動重試，既有摘要與模型保留。兩份資料夾仍共用固定服務埠，請勿同時啟動；未知服務不會被接管或關閉。
+
+便攜版自動測試在解壓的發布 ZIP 中，直接以 EXE 啟動內置 Python，並移除 PATH 中的 Python 位置；檢查首次配置判斷、依賴安裝、單元測試、FFmpeg、Whisper 匯入、網頁載入及實際 HTTP 健康端點。此測試不下載模型、不驗證所有 GPU，也未自動操作桌面進度視窗。
+
+### 開發者：原始碼版（仍需 Python）
 
 1. 從 [Releases](https://github.com/leto0309/VideoSummarizer/releases) 下載原始碼 ZIP，解壓到你有寫入權限的本機資料夾，例如 `D:\VideoSummarizer`。首次發布前也可使用 GitHub 的 Code → Download ZIP。
 2. 從 [Python 官方網站](https://www.python.org/downloads/windows/) 安裝 **Python 3.11、Windows 64 位**。保留 Python Launcher，或讓 `python` 指令指向 Python 3.11。
@@ -18,7 +33,7 @@ Windows 免費本機影片摘要工具：Bilibili / b23.tv / YouTube、字幕優
 
 ## 環境與模型
 
-- 首版目標：Windows 10 22H2 / Windows 11，x64，Python 3.11。其他系統未驗證。
+- 目標：Windows 10 22H2 / Windows 11，x64，Python 3.11；便攜版內置此環境，源碼版需自行安裝。其他系統未驗證。
 - 建議 RAM 16 GB；磁碟建議至少預留 15 GB（依模型及依賴而變動）。這是建議配置，不是已驗證的最低需求。
 - NVIDIA GPU 相容時 Whisper 使用 CUDA `int8_float16`；否則 CPU `int8`，CPU 處理長影片可能很慢。
 - Whisper 預設 `small`，首次無字幕轉錄時自動從 Hugging Face 下載到專案模型目錄。
@@ -76,4 +91,4 @@ py -3.11 -m venv .venv
 
 Ollama cloud 已禁用；字幕和畫面只送至專案的本機 Ollama。原始平台、GitHub、PyPI、Node.js、Ollama 模型庫與 Hugging Face 仍會收到必要下載請求。執行檔和模型首次下載需使用者同意。
 
-專案代码採 [MIT](LICENSE)。第三方程式、套件與模型保留自己的授權，詳見 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。此倉庫和下載 ZIP 不包含第三方二進位或模型權重。
+專案代码採 [MIT](LICENSE)。第三方程式、套件與模型保留自己的授權，詳見 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。源碼 ZIP 不含第三方二進位或模型權重；Windows 便攜 ZIP 另含 CPython 及其上游授權，不含 AI 模型或下載影片。

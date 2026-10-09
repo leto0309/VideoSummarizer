@@ -1,0 +1,60 @@
+name: Windows portable release
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  portable:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      PYTHONIOENCODING: utf-8
+      OLLAMA_NO_CLOUD: '1'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+          architecture: x64
+      - name: Build portable Python and native launcher
+        run: python scripts/build_portable.py $env:RELEASE_TAG
+      - name: Test extracted deliverable with no PATH Python
+        run: |
+          $zip = "dist/VideoSummarizer-$env:RELEASE_TAG-windows-x64.zip"
+          Expand-Archive -LiteralPath $zip -DestinationPath verification
+          $bundle = (Resolve-Path verification/VideoSummarizer).Path
+          $python = Join-Path $bundle 'runtime/python.exe'
+          $env:TEMP = $env:TMP = Join-Path $bundle 'tools/install-temp'
+          New-Item -ItemType Directory -Path $env:TEMP -Force | Out-Null
+          & $python -s "$bundle/desktop_launcher.py" --check
+          if ($LASTEXITCODE -ne 10) { throw 'Fresh bundle must request setup' }
+          & $python -m pip install --no-cache-dir --only-binary=:all: --find-links "$bundle/wheels" -r "$bundle/requirements.txt"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Push-Location $bundle
+          & $python -m unittest discover -s tests -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $env:PATH = "$env:WINDIR\System32;$env:WINDIR"
+          Remove-Item Env:PYTHONHOME,Env:PYTHONPATH -ErrorAction SilentlyContinue
+          $exe = Join-Path $bundle 'VideoSummarizer.exe'
+          $process = Start-Process -FilePath $exe -ArgumentList '--self-test' -Wait -PassThru -WindowStyle Hidden
+          Get-Content portable-test.log
+          if ($process.ExitCode -ne 0) { throw 'Native launcher self-test failed' }
+          Pop-Location
+      - name: Upload verified Windows download
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release upload $env:RELEASE_TAG "dist/VideoSummarizer-$env:RELEASE_TAG-windows-x64.zip" dist/WINDOWS_SHA256SUMS.txt
