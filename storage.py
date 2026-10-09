@@ -50,7 +50,11 @@ def _read(task):
 
 def remove_task(task, root=TEMP):
     task, root = Path(task), Path(root)
-    if root.resolve() != root.absolute() or task.resolve().parent != root.resolve() or not _read(task):
+    # Windows 8.3 aliases resolve to long names without being links. Reject
+    # actual reparse points, including ancestors, rather than comparing names.
+    if any(_unsafe(parent) for parent in (root, *root.parents)):
+        raise RuntimeError('拒絕清理連結或 junction 中的暫存')
+    if task.absolute().parent != root.absolute() or task.resolve().parent != root.resolve() or not _read(task):
         raise RuntimeError('拒絕清理非本專案暫存')
     size(task)  # reject all reparse points before recursive removal
     shutil.rmtree(task)

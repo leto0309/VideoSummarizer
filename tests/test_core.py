@@ -75,6 +75,19 @@ class CoreTests(unittest.TestCase):
                     storage.guard(root=root)
             self.assertTrue(file.exists())
 
+    def test_cleanup_rejects_reparse_ancestor(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            task = root / ('a' * 32)
+            task.mkdir()
+            marker = task / 'task.json'
+            marker.write_text(json.dumps({'owner': storage.MARKER, 'id': task.name}))
+            original = storage._unsafe
+            with patch.object(storage, '_unsafe', side_effect=lambda path: path == root.parent or original(path)):
+                with self.assertRaisesRegex(RuntimeError, 'junction'):
+                    storage.remove_task(task, root)
+            self.assertTrue(marker.exists())
+
     def test_cuda_failure_retries_cpu(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
