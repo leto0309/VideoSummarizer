@@ -101,7 +101,8 @@ class CoreTests(unittest.TestCase):
                 (root / 'transcript.json').write_text(json.dumps({'language': 'en', 'cues': [
                     {'start': 0, 'end': 1, 'text': 'CPU fallback works'}]}))
                 return subprocess.CompletedProcess(args, 0, '', '')
-            with patch.object(speech.subprocess, 'run', side_effect=worker):
+            with patch.object(speech, 'ensure_model', return_value=root / 'model'), \
+                 patch.object(speech.subprocess, 'run', side_effect=worker):
                 cues, info = speech.transcribe(root / 'audio.wav', root)
             self.assertEqual(devices, ['cuda', 'cpu'])
             self.assertEqual(info['compute_type'], 'int8')

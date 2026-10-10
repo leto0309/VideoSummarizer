@@ -34,6 +34,9 @@ def run(url, visual=False, model=None, whisper='small', mode='auto', progress=la
                 cues, source = get_subtitles(info, task.path)
                 video = None
                 if not cues:
+                    from whisper_models import ensure_model
+                    progress('無字幕，檢查 Whisper small 語音模型（首次可能需要下載）')
+                    ensure_model(whisper, progress=progress)
                     progress('無字幕，下載音訊並使用 Whisper 轉錄')
                     audio = download(info, task.path)
                     cues, source = transcribe(audio, task.path, whisper, mode)

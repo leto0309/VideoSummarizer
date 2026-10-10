@@ -81,6 +81,13 @@ def setup():
         print('CUDA runtime unavailable. Whisper will use CPU int8.')
     from launcher import pull
     pull()
+    # Subtitle-only use remains available if the speech model host is unreachable.
+    from whisper_models import ensure_model, ModelUnavailableError
+    try:
+        ensure_model(progress=lambda message: print(message, flush=True))
+    except ModelUnavailableError as exc:
+        print('警告：語音模型尚未完成；有字幕的影片仍可處理。', flush=True)
+        print(str(exc), flush=True)
 
 
 if __name__ == '__main__':

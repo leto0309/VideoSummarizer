@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1 — 2026-10-10
+
+Prepare Whisper small before downloading subtitle-free audio or starting GPU/CPU workers. Model download failures now show a specific network/model preparation message, save details to logs/whisper-download.log and do not repeat the same download as a CPU fallback. Complete existing caches and flat offline model folders are used without a Hub request. Genuine CUDA errors still fall back to CPU.
+
+First setup attempts to predownload Whisper; if its host is unreachable, subtitle-based use remains available with a warning. The web page shows speech-model readiness, and prepare-whisper.bat allows a separately consented predownload/retry. README documents copying an existing cache or official model files for offline transfer. Partial model files are preserved for retry and never advertised as complete. Added offline/cache, download failure and worker fallback regression tests.
+
 ## 0.2.0 — 2026-10-10
 
 Windows x64 portable ZIP with checksum-verified, bundled CPython 3.11.17 and a native VideoSummarizer.exe progress window. Users no longer install system Python. The first launch requests consent and automatically installs video/AI dependencies, portable tools and the default Ollama model inside the application directory. No global PATH changes or paid/cloud API.

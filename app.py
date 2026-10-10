@@ -8,6 +8,15 @@ st.title('🎬 本機影片摘要')
 st.caption('免費本機 AI · 繁體中文 · 字幕優先 · 單一任務序列處理')
 gpu = gpu_info()
 st.info(f'{gpu["name"]}｜VRAM {gpu["vram_mib"]} MiB｜Whisper 預設 small，CUDA 不相容時自動使用 CPU int8')
+with st.expander('Whisper 語音模型狀態 / 下載失敗處理'):
+    from whisper_models import cached_model
+    if cached_model():
+        st.success('Whisper small 必要檔案已就緒；轉錄時使用本機檔案，不再連線下載。')
+    else:
+        st.warning('Whisper small 尚未準備完成。有字幕的影片可直接處理；無字幕影片需先下載語音模型。')
+        st.write('雙擊軟體資料夾中的 prepare-whisper.bat 預先下載（約 464 MiB）。'
+                 '如果 Hugging Face 無法連線，可複製其他電腦已下載的 models/whisper 資料夾；'
+                 '也可將官方模型檔案放到 models/whisper/small。詳見 README。')
 with st.form('video'):
     url = st.text_input('Bilibili、b23.tv 或 YouTube 連結', placeholder='https://www.bilibili.com/video/...')
     visual = st.checkbox('加入約 8 張代表畫面的本機分析（需額外下載低解析度影片）', value=False)

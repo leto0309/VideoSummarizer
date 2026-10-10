@@ -2,20 +2,20 @@
 
 Windows 免費本機影片摘要工具：Bilibili / b23.tv / YouTube、字幕優先、繁體中文摘要、可選畫面分析。
 
-**v0.2.0 提供 Windows x64 便攜版，內置 Python 3.11.17，無需預先安裝 Python。** 解壓後雙擊 `VideoSummarizer.exe`。首次使用仍需同意自動下載影片/語音依賴、Ollama、Node.js 和模型；完成後直接啟動本機網頁。沒有付費 API，不使用 Ollama cloud。
+**v0.2.1 提供 Windows x64 便攜版，內置 Python 3.11.17，無需預先安裝 Python。** 解壓後雙擊 `VideoSummarizer.exe`。首次使用仍需同意自動下載影片/語音依賴、Ollama、Node.js 和模型；完成後直接啟動本機網頁。沒有付費 API，不使用 Ollama cloud。
 
 ## 下載與安裝
 
 ### 一般使用者：免預裝 Python 的 Windows 便攜版
 
-1. 從 [Releases](https://github.com/leto0309/VideoSummarizer/releases) 下載 **VideoSummarizer-v0.2.0-windows-x64.zip**，完整解壓到有寫入權限的本機資料夾，勿直接在 ZIP 內執行。
+1. 從 [Releases](https://github.com/leto0309/VideoSummarizer/releases) 下載 **VideoSummarizer-v0.2.1-windows-x64.zip**，完整解壓到有寫入權限的本機資料夾，勿直接在 ZIP 內執行。
 2. 雙擊 **VideoSummarizer.exe**。首次會詢問是否允許下載免費依賴和模型；同意後在進度視窗自動配置，無需手動安裝 Python 或輸入 pip 指令。取消時不下載。
 3. 配置成功後自動開啟瀏覽器。之後雙擊同一 EXE 即可啟動或重用此資料夾的背景服務。
 4. 可選執行 `install-bookmark.bat` 安裝目前使用者的啟動書籤；需先完成首次配置。
 
 便攜包內置完整 CPython、原生 .NET Framework 啟動器和預製 srt wheel；其餘 Python 套件、FFmpeg、Ollama、Node.js、CUDA 執行庫和模型於首次同意後下載到軟體資料夾。依賴採 wheel 安裝，首次配置不需編譯器。這不是完全離線包。目標 Windows 10 22H2 / Windows 11 x64（系統內建 .NET Framework 4.8）；不註冊系統 Python、不改全域 PATH、不需要管理員權限。使用 Astral python-build-standalone 20261009 的 CPython 3.11.17，構建時核對固定 SHA256。
 
-進度視窗顯示配置與錯誤，進行中請保持開啟。成功後可關閉進度視窗，背景服務仍會運行；日誌保留在 `logs/`。首次語音轉錄再下載 Whisper small。下載失敗可重新啟動重試，既有摘要與模型保留。兩份資料夾仍共用固定服務埠，請勿同時啟動；未知服務不會被接管或關閉。
+進度視窗顯示配置與錯誤，進行中請保持開啟。成功後可關閉進度視窗，背景服務仍會運行；日誌保留在 `logs/`。首次配置嘗試預先下載 Whisper small；若 Hugging Face 無法連線，會顯示警告，仍允許處理有字幕的影片。無字幕影片需要先完成語音模型。可雙擊 `prepare-whisper.bat` 重試；既有摘要與模型保留。兩份資料夾仍共用固定服務埠，請勿同時啟動；未知服務不會被接管或關閉。
 
 便攜版自動測試在解壓的發布 ZIP 中，直接以 EXE 啟動內置 Python，並移除 PATH 中的 Python 位置；檢查首次配置判斷、依賴安裝、單元測試、FFmpeg、Whisper 匯入、網頁載入及實際 HTTP 健康端點。此測試不下載模型、不驗證所有 GPU，也未自動操作桌面進度視窗。
 
@@ -36,7 +36,7 @@ Windows 免費本機影片摘要工具：Bilibili / b23.tv / YouTube、字幕優
 - 目標：Windows 10 22H2 / Windows 11，x64，Python 3.11；便攜版內置此環境，源碼版需自行安裝。其他系統未驗證。
 - 建議 RAM 16 GB；磁碟建議至少預留 15 GB（依模型及依賴而變動）。這是建議配置，不是已驗證的最低需求。
 - NVIDIA GPU 相容時 Whisper 使用 CUDA `int8_float16`；否則 CPU `int8`，CPU 處理長影片可能很慢。
-- Whisper 預設 `small`，首次無字幕轉錄時自動從 Hugging Face 下載到專案模型目錄。
+- Whisper 預設 `small`，從官方 Hugging Face 倉庫下載到專案模型目錄（約 464 MiB）。完整本機模型優先使用，轉錄時不再檢查線上版本。
 - Ollama 預設 `qwen3-vl:4b-instruct`；未偵測 NVIDIA GPU，或 VRAM 小於 6 GiB 時選擇 `qwen3-vl:2b-instruct`。CPU / 部分 GPU 推論速度取決於硬體。
 - 上下文 4096 tokens；長字幕分段再合併。Whisper 和 Ollama 序列處理，跨頁面只允許一個摘要任務。
 - 專案 Ollama 使用 `127.0.0.1:11435`，網頁使用 `127.0.0.1:8501`。這些是本機端點，不對外公開。
@@ -68,6 +68,20 @@ Windows 免費本機影片摘要工具：Bilibili / b23.tv / YouTube、字幕優
 書籤模式沒有開機自啟；關閉網頁不會停止背景服務。要移除連結註冊，執行 `remove-bookmark.bat`；模型與摘要保留。啟動器採用系統預設瀏覽器，不包含發布者的 Chrome 路徑或個人設定。
 
 ## 常見問題
+
+### Whisper 下載逾時 / WinError 10060 / LocalEntryNotFoundError
+
+這表示無法取得語音模型且本機沒有完整快取；不是 CUDA 計算失敗。改用 CPU 不會修復網路。網頁能開啟不代表所有 AI 模型均已下載。
+
+1. 確認能開啟 [官方 small 模型頁面](https://huggingface.co/Systran/faster-whisper-small)。首次下載模型需要網路，推論本身在本機執行。
+2. 在軟體資料夾雙擊 `prepare-whisper.bat`，同意下載後等待完成。使用內置 Python，不需安裝系統 Python。失敗原因記錄於 `logs/whisper-download.log`，部分下載檔案保留供重試。
+3. 若該電腦無法連線，可在能下載的電腦完成這一步，關閉下載程式後，將**整個 `models/whisper` 資料夾**複製到另一台軟體資料夾下的同名位置。若來源快取使用符號連結，請複製實際檔案內容，避免斷鏈。
+4. 也可從官方模型頁面下載同一版本的 `model.bin`、`config.json`、`tokenizer.json`、`vocabulary.txt`（或 `vocabulary.json`），放到 `models/whisper/small/`；若上游提供 `preprocessor_config.json`，一併複製。請使用 faster-whisper 的 CTranslate2 模型，OpenAI 原始 `.pt` 檔不能直接使用。
+5. 再執行 `prepare-whisper.bat`。本機完整檔案會直接通過檢查，不連線下載。網頁也顯示模型檔案是否就緒；實際權重是否有效仍由推論時的原生模型載入驗證。
+
+v0.2.0 使用者可下載 v0.2.1 **source.zip**，將其中 `VideoSummarizer` 資料夾內的程式檔覆蓋到既有軟體目錄。便攜版保留原有 `VideoSummarizer.exe`、`runtime`、`tools`、`models`、`outputs` 與 `portable-ready.json`，不需要重裝 Python 或 Ollama。完成後執行 `prepare-whisper.bat`；關閉原來的網頁並重新開啟以載入新版。自訂修改過的原始碼請先備份。修正網路錯誤提示不能保證 Hugging Face 在每個網路環境都可連線。
+
+### 其他問題
 
 - **第一次啟動沒有反應**：先確認瀏覽器的「開啟 Python」提示；Ollama 初始化期間查看 `logs/startup.log`。Streamlit 郵箱提示已明確關閉。
 - **端口已使用**：確認是否仍有此專案或其他服務運行。未知 Ollama 服务會被拒絕，不會自動結束他人的程序。
