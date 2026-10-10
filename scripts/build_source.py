@@ -4,12 +4,18 @@ import hashlib
 from pathlib import Path
 import re
 import subprocess
+import sys
 import zipfile
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from app_version import validate_release_version
 
 
 def build(version):
     if not re.fullmatch(r'v\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?', version):
         raise ValueError('Invalid release version')
+    validate_release_version(version)
     root = Path(__file__).resolve().parents[1]
     tracked = subprocess.check_output(['git', 'ls-files', '-z'], cwd=root).decode('utf-8').split('\0')
     blocked = {'.git', '.venv', 'runtime', 'models', 'tools', 'temp', 'outputs', 'logs', 'build', 'dist', '__pycache__'}

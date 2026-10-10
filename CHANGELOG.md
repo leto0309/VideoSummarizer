@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.3 — 2026-10-11
+
+Show the running VideoSummarizer version below the page title. A localized About section identifies the source / standard Windows / Whisper / Whisper + Ollama package edition and links to that version's release notes. Simplified Chinese, Traditional Chinese and English labels follow the page-language selector. Reading version information is entirely local and does not download models or check for updates.
+
+Use one application-code version shared by the page and all release builders. Refuse mismatched release tags and packaged application versions. Stamp the edition into each portable package while preserving Python and model provenance. The page keeps the running code version when build metadata is old, missing or damaged, shows an unknown edition and gives recovery advice. A downloaded ZIP's name and the latest GitHub release cannot replace the running version.
+
+Add offline three-language page coverage, preservation of input/device settings, corrupt metadata and mixed-install regression cases, and version/edition checks executed inside every extracted Windows deliverable.
+
+## 0.3.2
+
+First-time setup skips optional CUDA wheels and defaults speech recognition to CPU int8. GPU acceleration can be installed separately with install-gpu.bat, bounded retries and a 20-minute installer deadline. The Windows progress window supports cancelling the installation process tree while preserving models, outputs and CPU readiness. Main Python dependency installation has progress, local cache and a 45-minute deadline. Other tool/model download stages keep their own network timeouts.
+
 ## 0.3.1
 
 Add a `windows-x64-with-whisper-ollama.zip` edition combining this release's verified Python/Whisper package with the complete official Ollama 0.40.2 Windows amd64 ZIP. Pin and verify the upstream ZIP SHA256; preserve every DLL and component notice and add the upstream Ollama MIT license. Stream archive creation to limit memory use, reject unsafe paths and private base files, check ZIP CRC and the GitHub 2 GiB asset limit, and provide archive/individual-file provenance plus SHA256 manifest.

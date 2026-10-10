@@ -6,6 +6,18 @@ LANGUAGES = ('zh-CN', 'zh-TW', 'en')
 DEFAULT_LANGUAGE = 'zh-CN'
 LANGUAGE_NAMES = {'zh-CN': '简体中文', 'zh-TW': '繁體中文', 'en': 'English'}
 TEXT = {
+ 'app_version': ('当前运行版本：{version}', 'Running version: {version}'),
+ 'about': ('关于 VideoSummarizer', 'About VideoSummarizer'),
+ 'app_edition': ('安装包类型：{edition}', 'Package edition: {edition}'),
+ 'edition_source': ('源代码版', 'Source edition'),
+ 'edition_windows-x64': ('Windows 标准版（内含 Python）', 'Windows standard edition (Python included)'),
+ 'edition_windows-x64-with-whisper': ('Windows 内含 Python + Whisper 版', 'Windows edition with Python + Whisper'),
+ 'edition_windows-x64-with-whisper-ollama': ('Windows 内含 Python + Whisper + Ollama 版', 'Windows edition with Python + Whisper + Ollama'),
+ 'edition_unknown': ('未知', 'Unknown'),
+ 'release_notes': ('查看此版本的更新说明', 'View release notes for this version'),
+ 'running_version_help': ('这里显示当前后台运行的版本。下载新版后，请停止旧版服务，再打开新版文件夹中的程序。', 'This is the version running in the background. After downloading an update, stop the old services and launch the program from the new folder.'),
+ 'version_mismatch': ('安装包记录与当前运行代码的版本不一致。请将发布包完整解压到新文件夹，然后停止旧版服务并打开新版。', 'Package metadata and running code versions differ. Fully extract the release into a new folder, stop the old services, and launch the new copy.'),
+ 'version_unavailable': ('无法确认安装包类型。当前运行代码的版本显示在标题下；请完整解压发布包到新文件夹。', 'The package edition could not be verified. The running code version is shown below the title. Fully extract the release into a new folder.'),
  'title': ('本机视频摘要', 'Local Video Summarizer'),
  'language': ('页面语言 / Language', 'Page language / Language'),
  'summary_language': ('摘要语言', 'Summary language'),

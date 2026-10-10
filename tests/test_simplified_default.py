@@ -49,7 +49,7 @@ class SimplifiedDefaultTests(unittest.TestCase):
             app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / 'app.py')).run(timeout=30)
         self.assertFalse(app.exception)
         self.assertEqual(app.title[0].value, '🎬 本机视频摘要')
-        self.assertIn('简体中文', app.caption[0].value)
+        self.assertTrue(any('简体中文' in caption.value for caption in app.caption))
         self.assertEqual(app.selectbox[0].value, 'zh-CN')
         self.assertEqual(app.selectbox[2].value, ALLOWED_MODELS[1])
         self.assertEqual(app.selectbox[3].value, 'cpu')

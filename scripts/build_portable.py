@@ -16,11 +16,14 @@ PYTHON_RELEASE = '20261009'
 PYTHON_FILE = 'cpython-3.11.17+20261009-x86_64-pc-windows-msvc-install_only.tar.gz'
 PYTHON_SHA256 = '4d307648d2fe5f8d927e10380cc33eb7afd8a34a7efe0ed786b5860b5f2d3408'
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from app_version import portable_record, validate_release_version
 
 
 def build(version):
     if os.name != 'nt' or not re.fullmatch(r'v\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?', version):
         raise ValueError('Windows build and valid release version required')
+    validate_release_version(version)
     cache = ROOT / 'build'
     cache.mkdir(exist_ok=True)
     archive = cache / PYTHON_FILE
@@ -66,11 +69,11 @@ def build(version):
     subprocess.run([str(compiler), '/nologo', '/target:winexe', '/platform:x64',
                     '/r:System.Windows.Forms.dll', '/r:System.Drawing.dll',
                     '/out:' + str(package / 'VideoSummarizer.exe'), str(ROOT / 'packaging' / 'Launcher.cs')], check=True)
-    (package / 'PORTABLE_BUILD.json').write_text(json.dumps({
+    (package / 'PORTABLE_BUILD.json').write_text(json.dumps(portable_record({
         'version': version, 'python': '3.11.17', 'python_release': PYTHON_RELEASE,
         'python_archive_sha256': PYTHON_SHA256,
         'bootstrap': 'native .NET Framework launcher', 'dependencies': 'srt wheel bundled; others download on first consented launch'
-    }, indent=2), encoding='utf-8')
+    }, version, 'windows-x64'), indent=2), encoding='utf-8')
     destination = ROOT / 'dist'
     destination.mkdir(exist_ok=True)
     output = destination / f'VideoSummarizer-{version}-windows-x64.zip'

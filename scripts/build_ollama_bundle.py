@@ -6,11 +6,14 @@ from pathlib import Path, PurePosixPath
 import re
 import stat
 import sys
+import sys
 import time
 import urllib.request
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from app_version import portable_record, validate_packaged_version, validate_release_version
 sys.path.insert(0, str(ROOT))
 from scripts.build_model_bundle import FILES, digest, verify
 OLLAMA_VERSION = '0.40.2'
@@ -81,6 +84,7 @@ def validate_base(package, version):
     whisper = json.loads(package.read('VideoSummarizer/WHISPER_BUNDLE.json'))
     if portable.get('version') != version or whisper.get('version') != version:
         raise ValueError('Base archive version mismatch')
+    validate_packaged_version(package.read('VideoSummarizer/app_version.py').decode('utf-8'), version)
     for name, expected in FILES.items():
         with package.open('VideoSummarizer/models/whisper/small/' + name) as handle:
             if hashlib.file_digest(handle, 'sha256').hexdigest() != expected:
@@ -121,6 +125,7 @@ def build(version, base_sha256, whisper_zip=None, ollama_zip=None):
         raise ValueError('Invalid release version')
     if not re.fullmatch(r'[0-9a-f]{64}', base_sha256 or ''):
         raise ValueError('Verified with-Whisper SHA256 required')
+    validate_release_version(version)
     cache = ROOT / 'build' / 'ollama-cache'
     cache.mkdir(parents=True, exist_ok=True)
     base_name = f'VideoSummarizer-{version}-windows-x64-with-whisper.zip'
@@ -173,6 +178,9 @@ Ollama ZIP SHA256：{OLLAMA_SHA256}
                     package.writestr(info.filename, instructions.encode('utf-8') + b'\n---\n\n' + baseline.read(info))
                 elif info.filename == 'VideoSummarizer/WHISPER-EDITION.md':
                     package.writestr(info.filename, instructions)
+                elif info.filename == 'VideoSummarizer/PORTABLE_BUILD.json':
+                    package.writestr(info.filename, json.dumps(portable_record(
+                        json.loads(baseline.read(info)), version, 'windows-x64-with-whisper-ollama'), indent=2))
                 else:
                     copy_entry(baseline, info, package, info.filename)
             for info in vendor.infolist():

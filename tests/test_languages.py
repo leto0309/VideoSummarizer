@@ -95,7 +95,7 @@ class LanguageTests(unittest.TestCase):
                 self.assertTrue(app.checkbox(key='visual').value)
             app.selectbox(key='summary_language').select('en').run()
             self.assertEqual(app.selectbox(key='ui_language').value, 'zh-CN')
-            self.assertIn('English', app.caption[0].value)
+            self.assertTrue(any('English' in caption.value for caption in app.caption))
 
 
 class VersionTests(unittest.TestCase):

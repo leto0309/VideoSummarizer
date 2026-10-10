@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 import traceback
 import streamlit as st
+from app_version import get_version_info
 from config import ALLOWED_MODELS, ROOT, default_model, gpu_info
 from i18n import LANGUAGES, LANGUAGE_NAMES, friendly_error, tr
 import preferences
@@ -28,7 +29,16 @@ if prefs != {'ui_language': ui, 'summary_language': selection}:
     except OSError:
         st.warning(tr(ui, 'preferences_failed'))
 st.title('🎬 ' + tr(ui, 'title'))
+version_info = get_version_info()
+st.caption('VideoSummarizer · ' + tr(ui, 'app_version', version=version_info.version))
 st.caption(tr(ui, 'caption') + ' · ' + LANGUAGE_NAMES[language])
+with st.expander(tr(ui, 'about')):
+    st.write(tr(ui, 'app_version', version=version_info.version))
+    st.write(tr(ui, 'app_edition', edition=tr(ui, 'edition_' + version_info.edition)))
+    st.markdown(f'[{tr(ui, "release_notes")}]({version_info.release_url})')
+    st.caption(tr(ui, 'running_version_help'))
+if version_info.build_status != 'ok':
+    st.warning(tr(ui, 'version_' + version_info.build_status))
 gpu = gpu_info()
 name = gpu['name'] if gpu['vram_mib'] else tr(ui, 'no_gpu')
 st.info(tr(ui, 'gpu', name=name, memory=gpu['vram_mib']))

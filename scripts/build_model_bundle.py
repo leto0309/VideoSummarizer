@@ -6,10 +6,13 @@ import re
 from pathlib import Path
 import shutil
 import stat
+import sys
 import urllib.request
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from app_version import portable_record, validate_packaged_version, validate_release_version
 VERSION = 'v0.2.1'
 BASE_NAME = f'VideoSummarizer-{VERSION}-windows-x64.zip'
 BASE_SHA256 = '213a6f3e7a6274bacf03e6dcd2d07391472a8c9f5a0a737e0ba66366a308c168'
@@ -83,6 +86,7 @@ def build(portable_zip=None, model_dir=None, version=VERSION, base_sha256=None):
     expected = base_sha256 or (BASE_SHA256 if version == VERSION else None)
     if not expected or not re.fullmatch(r'[0-9a-f]{64}', expected):
         raise ValueError('A verified portable base SHA256 is required for new versions')
+    validate_release_version(version)
     base_name = f'VideoSummarizer-{version}-windows-x64.zip'
     cache = ROOT / 'build' / 'with-whisper-cache'
     cache.mkdir(parents=True, exist_ok=True)
@@ -99,6 +103,9 @@ def build(portable_zip=None, model_dir=None, version=VERSION, base_sha256=None):
     record = json.loads((bundle / 'PORTABLE_BUILD.json').read_text(encoding='utf-8'))
     if record.get('version') != version:
         raise ValueError('Portable base version does not match requested release')
+    validate_packaged_version((bundle / 'app_version.py').read_text(encoding='utf-8'), version)
+    (bundle / 'PORTABLE_BUILD.json').write_text(json.dumps(
+        portable_record(record, version, 'windows-x64-with-whisper'), indent=2), encoding='utf-8')
     model_target = bundle / 'models' / 'whisper' / 'small'
     model_target.mkdir(parents=True)
     for name, expected in FILES.items():

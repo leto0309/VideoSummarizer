@@ -1,5 +1,17 @@
 # VideoSummarizer
 
+## v0.3.3：页面显示当前运行版本
+
+建议下载 [v0.3.3 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.3/VideoSummarizer-v0.3.3-windows-x64-with-whisper-ollama.zip)，完整解压到新的可写入文件夹。停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。
+
+页面标题下固定显示 `VideoSummarizer · 当前运行版本：v0.3.3`。“关于 VideoSummarizer”显示安装包类型，并提供该版本的更新说明链接；这些标签随页面切换简体中文、繁體中文或 English。版本显示无需联网、不会调用模型，也不会自动检查或安装更新。
+
+显示的是当前后台所加载代码的版本。下载新版 ZIP 后，如果书签仍连接旧版后台，页面不会因此变成新版。请关闭旧版服务，再从新版文件夹启动。若安装包记录与代码版本不一致，页面保留运行代码的版本、显示未知安装包类型并提示完整解压；不要把新版文件零散覆盖到旧文件夹。
+
+保留 v0.3.2 的 CPU int8 默认设置、首次配置跳过 CUDA 和独立 `install-gpu.bat`。内含 Python、Whisper small 和完整官方 Ollama；其余 Python 依赖、Node.js 与 Qwen 摘要模型仍需首次同意后联网下载。本包不是完全离线包。原有模型与产出可自行复制完整的 `models` 和 `outputs` 文件夹；不要复制旧版就绪标记、日志、补丁或 `PORTABLE_BUILD.json`。
+
+以下保留此前版本的说明。
+
 ## v0.3.2：首次配置不再等待 CUDA 下载
 
 建议下载 [v0.3.2 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.2/VideoSummarizer-v0.3.2-windows-x64-with-whisper-ollama.zip)。完整解压到新的可写入文件夹，停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。不需要预装 Python，也不需要 v0.3.1 的临时启动补丁。
