@@ -1,0 +1,59 @@
+name: Windows with Whisper release
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  bundle:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    env:
+      PYTHONIOENCODING: utf-8
+      OLLAMA_NO_CLOUD: '1'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+          architecture: x64
+      - name: Test archive and checksum guards
+        run: python -m unittest discover -s tests -p test_model_bundle.py -v
+      - name: Build unchanged v0.2.1 application with verified Whisper small
+        run: python scripts/build_model_bundle.py
+      - name: Test the extracted delivery including real offline model load
+        run: |
+          Expand-Archive -LiteralPath dist/VideoSummarizer-v0.2.1-windows-x64-with-whisper.zip -DestinationPath verification
+          $bundle = (Resolve-Path verification/VideoSummarizer).Path
+          $python = Join-Path $bundle 'runtime/python.exe'
+          $env:TEMP = $env:TMP = Join-Path $bundle 'tools/install-temp'
+          New-Item -ItemType Directory -Path $env:TEMP -Force | Out-Null
+          & $python -m pip install --no-cache-dir --only-binary=:all: --find-links "$bundle/wheels" -r "$bundle/requirements.txt"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Push-Location $bundle
+          $env:HF_HUB_OFFLINE = '1'
+          & $python whisper_models.py --check
+          if ($LASTEXITCODE -ne 0) { throw 'Bundled small model must be ready offline' }
+          @'
+          from whisper_models import ensure_model
+          from faster_whisper import WhisperModel
+          model = WhisperModel(str(ensure_model()), device='cpu', compute_type='int8', local_files_only=True)
+          print('Real bundled Whisper small offline CPU load passed')
+          '@ | & $python -
+          if ($LASTEXITCODE -ne 0) { throw 'Offline model load failed' }
+          & $python -m unittest discover -s tests -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $env:PATH = "$env:WINDIR\System32;$env:WINDIR"
+          Remove-Item Env:PYTHONHOME,Env:PYTHONPATH -ErrorAction SilentlyContinue
+          $process = Start-Process -FilePath "$bundle/VideoSummarizer.exe" -ArgumentList '--self-test' -Wait -PassThru -WindowStyle Hidden
+          Get-Content portable-test.log
+          if ($process.ExitCode -ne 0) { throw 'Native launcher self-test failed' }
+          Pop-Location
+      - name: Attach additional download to v0.2.1
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release upload v0.2.1 dist/VideoSummarizer-v0.2.1-windows-x64-with-whisper.zip dist/WITH_WHISPER_SHA256SUMS.txt

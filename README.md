@@ -8,6 +8,10 @@ Windows 免費本機影片摘要工具：Bilibili / b23.tv / YouTube、字幕優
 
 ### 一般使用者：免預裝 Python 的 Windows 便攜版
 
+**無法連線 Hugging Face 的使用者可直接下載 [v0.2.1 內含 Whisper 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.2.1/VideoSummarizer-v0.2.1-windows-x64-with-whisper.zip)**（約 500 MB）。這是一個新資料夾使用的完整 Windows 安裝包：包含相同的 Python / EXE 和已驗證的 small 語音模型，解壓後雙擊 `VideoSummarizer.exe`，不用覆盖舊版或另行搬移語音模型。首次仍需同意自動下載其他依賴、Ollama 和摘要模型，這不是全部依賴預裝的完全離線包。若舊版仍在背景運行，先停止舊版專案服務或重啟 Windows，再開啟新資料夾；兩份不能同時占用相同服務埠。
+
+下列標準便攜版約 47 MB，沒有內含語音模型：
+
 1. 從 [Releases](https://github.com/leto0309/VideoSummarizer/releases) 下載 **VideoSummarizer-v0.2.1-windows-x64.zip**，完整解壓到有寫入權限的本機資料夾，勿直接在 ZIP 內執行。
 2. 雙擊 **VideoSummarizer.exe**。首次會詢問是否允許下載免費依賴和模型；同意後在進度視窗自動配置，無需手動安裝 Python 或輸入 pip 指令。取消時不下載。
 3. 配置成功後自動開啟瀏覽器。之後雙擊同一 EXE 即可啟動或重用此資料夾的背景服務。
