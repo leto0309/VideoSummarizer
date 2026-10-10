@@ -63,7 +63,7 @@ class Launcher : Form {
             using (var check = Process.Start(Command("--check"))) { check.WaitForExit(); code = check.ExitCode; }
             if (code != 0 && code != 10) throw new Exception("環境檢查失敗，請完整重新解壓或查看日誌。");
             if (code == 10 && MessageBox.Show(this,
-                "首次使用需下載免費影片/語音依賴、Ollama、Node.js 與本機 AI 模型，約需數 GB 流量，建議預留 15 GB。\n\n僅寫入本軟體資料夾，不安裝系統 Python、不改全域 PATH，不使用付費 API 或 cloud。\n\n是否允許下載？",
+                "首次使用需下載尚未內置的免費影片/語音依賴、工具與本機 AI 模型，約需數 GB 流量，建議預留 15 GB。已內置的 Whisper / Ollama 會直接使用。\n\n僅寫入本軟體資料夾，不安裝系統 Python、不改全域 PATH，不使用付費 API 或 cloud。\n\n是否允許下載？",
                 Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) {
                 status.Text = "已取消首次配置，尚未下載。"; return;
             }

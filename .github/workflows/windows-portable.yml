@@ -16,6 +16,8 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: write
+    outputs:
+      whisper_sha256: ${{ steps.bundle-sha.outputs.whisper_sha256 }}
     env:
       RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
       PYTHONIOENCODING: utf-8
@@ -85,8 +87,70 @@ jobs:
           Get-Content portable-test.log
           if ($process.ExitCode -ne 0) { throw 'Whisper edition native self-test failed' }
           Pop-Location
+      - name: Record verified Whisper base checksum
+        id: bundle-sha
+        run: |
+          $sha = (Get-FileHash -LiteralPath "dist/VideoSummarizer-$env:RELEASE_TAG-windows-x64-with-whisper.zip" -Algorithm SHA256).Hash.ToLowerInvariant()
+          "whisper_sha256=$sha" >> $env:GITHUB_OUTPUT
       - name: Upload verified Windows downloads
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: gh release upload $env:RELEASE_TAG "dist/VideoSummarizer-$env:RELEASE_TAG-windows-x64.zip" "dist/VideoSummarizer-$env:RELEASE_TAG-windows-x64-with-whisper.zip" dist/WINDOWS_SHA256SUMS.txt dist/WITH_WHISPER_SHA256SUMS.txt
+  with-ollama:
+    needs: portable
+    runs-on: windows-latest
+    timeout-minutes: 40
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      VERIFIED_WHISPER_SHA: ${{ needs.portable.outputs.whisper_sha256 }}
+      PYTHONIOENCODING: utf-8
+      OLLAMA_NO_CLOUD: '1'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+          architecture: x64
+      - name: Build complete pinned Ollama and Whisper edition
+        run: |
+          python scripts/build_ollama_bundle.py --version $env:RELEASE_TAG --base-sha256 $env:VERIFIED_WHISPER_SHA
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Test actual extracted Ollama, Whisper and native launcher
+        run: |
+          Expand-Archive -LiteralPath "dist/VideoSummarizer-$env:RELEASE_TAG-windows-x64-with-whisper-ollama.zip" -DestinationPath ollama-verification
+          $bundle = (Resolve-Path ollama-verification/VideoSummarizer).Path
+          $python = Join-Path $bundle 'runtime/python.exe'
+          $env:TEMP = $env:TMP = Join-Path $bundle 'tools/install-temp'
+          New-Item -ItemType Directory -Path $env:TEMP -Force | Out-Null
+          & $python -m pip install --no-cache-dir --only-binary=:all: --find-links "$bundle/wheels" -r "$bundle/requirements.txt"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Push-Location $bundle
+          & $python scripts/verify_ollama_bundle.py $bundle
+          if ($LASTEXITCODE -ne 0) { throw 'Actual bundled Ollama failed' }
+          $env:HF_HUB_OFFLINE = '1'
+          @'
+          from whisper_models import ensure_model
+          from faster_whisper import WhisperModel
+          model = WhisperModel(str(ensure_model()), device='cpu', compute_type='int8', local_files_only=True)
+          print('Ollama edition bundled Whisper offline CPU load passed')
+          '@ | & $python -
+          if ($LASTEXITCODE -ne 0) { throw 'Actual bundled Whisper failed' }
+          & $python -m unittest discover -s tests -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $env:PATH = "$env:WINDIR\System32;$env:WINDIR"
+          Remove-Item Env:PYTHONHOME,Env:PYTHONPATH -ErrorAction SilentlyContinue
+          $process = Start-Process -FilePath "$bundle/VideoSummarizer.exe" -ArgumentList '--self-test' -Wait -PassThru -WindowStyle Hidden
+          Get-Content portable-test.log
+          if ($process.ExitCode -ne 0) { throw 'Ollama edition native launcher failed' }
+          Pop-Location
+      - name: Upload tested Ollama edition and checksum
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release upload $env:RELEASE_TAG "dist/VideoSummarizer-$env:RELEASE_TAG-windows-x64-with-whisper-ollama.zip" dist/WITH_WHISPER_OLLAMA_SHA256SUMS.txt

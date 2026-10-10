@@ -1,5 +1,17 @@
 # VideoSummarizer
 
+## v0.3.1：内置 Ollama 的 Windows 下载
+
+建议下载 [v0.3.1 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.1/VideoSummarizer-v0.3.1-windows-x64-with-whisper-ollama.zip)。包含 Python、Whisper small 和完整官方 Ollama 0.40.2 Windows x64 程序及运行库；首次配置直接使用包内 Ollama，解决安装时下载 Ollama ZIP 连接中断的问题。解压到新文件夹，停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。请至少预留 15 GB 空间，保留 `tools/ollama` 下全部文件。
+
+这仍不是完全离线包：其他 Python 依赖、FFmpeg、Node.js、可选 CUDA wheel 和 Qwen 摘要模型仍在首次同意后下载，其他服务器的网络问题仍可能影响配置。标准 Windows / 仅含 Whisper 版保留供需要较小下载的用户选择。
+
+保留 v0.3.0 的简体中文默认设置，以及页面和摘要独立切换简体中文、繁體中文和 English 的功能。原始摘要、SRT 和可核对时间戳不因语言转换而改写。
+
+内置 Ollama 原版 ZIP 固定 SHA256 `e29ad1d5063dd4b54b2492d9b00adab2cff9621bfa654b6c92aa8d6f1fdfe7fc`，与官方发布清单一致；保留原始运行库、组件许可和额外 Ollama MIT 许可。包内 `OLLAMA_BUNDLE.json` 记录来源、版本和逐文件哈希，发布页提供 `WITH_WHISPER_OLLAMA_SHA256SUMS.txt`。
+
+以下 v0.3.0 / v0.2.1 内容保留为此前版本及其他发行包说明。
+
 Windows 免费本机视频摘要工具：Bilibili / b23.tv / YouTube、字幕优先、可选画面分析。
 
 **v0.3.0：默认简体中文，页面和摘要支持「简体中文 / 繁體中文 / English」分别选择。** 页面立即切换，输入链接、模型和 CPU/GPU 设置会保留；语言偏好保存在软件文件夹的 `language-settings.json`。摘要默认跟随页面，也可单独指定。页面切换不会自动调用模型或改写已有摘要。

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.1
+
+Add a `windows-x64-with-whisper-ollama.zip` edition combining this release's verified Python/Whisper package with the complete official Ollama 0.40.2 Windows amd64 ZIP. Pin and verify the upstream ZIP SHA256; preserve every DLL and component notice and add the upstream Ollama MIT license. Stream archive creation to limit memory use, reject unsafe paths and private base files, check ZIP CRC and the GitHub 2 GiB asset limit, and provide archive/individual-file provenance plus SHA256 manifest.
+
+First setup uses the bundled Ollama and skips its GitHub download. This addresses the Ollama ZIP connection interruption reported during v0.2.1 installation. Other Python dependencies, FFmpeg, Node.js, optional CUDA wheels and Qwen weights still download after consent; this edition is not fully offline. Keep all v0.3.0 language features and leave previous downloads unchanged.
+
+Release CI tests the actual extracted Ollama on an isolated loopback port with no model download, verifies each bundled file, loads the real Whisper small offline on CPU, runs application tests and the native launcher without PATH Python, and uploads only after success. Add regression coverage that forbids Ollama download requests during setup when the binary is present.
+
 ## 0.3.0 — 2026-10-10
 
 Simplified Chinese is the default. Application UI, progress, friendly error messages and summary generation support Simplified Chinese, Traditional Chinese and English. Page and summary languages can be selected separately, with the summary following the page by default. Stable widget keys preserve URL/device/permission settings when switching languages; project-local preferences survive restart.

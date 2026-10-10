@@ -74,6 +74,8 @@ def setup():
                     raise RuntimeError('拒絕含越界路徑的壓縮檔')
             package.extractall(destination)
         archive.unlink()  # exact project-owned installer only, never a model
+    else:
+        print('已找到项目内 Ollama，跳过 Ollama 程序下载。', flush=True)
     print('Installing optional CUDA runtime wheels (CPU fallback is always available)...')
     result = subprocess.run([sys.executable, '-m', 'pip', 'install', '--only-binary=:all:',
                              '--no-cache-dir', '-r', str(ROOT / 'requirements-gpu.txt')])
