@@ -19,4 +19,6 @@ bookmark-settings.json
 .codex-created
 runtime/
 portable-ready.json
+language-settings.json
+.language-*.tmp
 build/

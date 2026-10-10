@@ -41,7 +41,7 @@ def build(version):
     for name in filter(None, tracked):
         source = ROOT / name
         if (any(part in blocked for part in Path(name).parts) or name.startswith('.env')
-                or Path(name).name == 'bookmark-settings.json' or source.is_symlink()):
+                or Path(name).name in {'bookmark-settings.json', 'language-settings.json'} or source.is_symlink()):
             raise ValueError(f'Unexpected tracked file: {name}')
         target = package / name
         target.parent.mkdir(parents=True, exist_ok=True)

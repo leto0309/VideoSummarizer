@@ -1,5 +1,7 @@
 # Third-party components
 
+The v0.3.0 with-Whisper edition includes the new v0.3.0 application and bundled Python, with the same pinned four public Whisper small files and preserved original MIT model license/card. It does not include users' language preferences, media, logs, summaries or credentials. The following v0.2.1 paragraph documents the earlier edition.
+
 An additional `windows-x64-with-whisper.zip` edition combines the checksum-verified, unchanged v0.2.1 standard Windows ZIP with the four public faster-whisper small model files from revision `536b0662742c02347bc0e980a01041f333bce120`. The model's original MIT license, official model card, repository reference and file hashes are preserved in that archive. It contains no user's media, summaries, logs or credentials. Other tools and dependencies are still downloaded with first-launch consent as described below.
 
 The MIT license in LICENSE applies to VideoSummarizer's own source code. It does not replace the licenses of dependencies or model weights. The source release contains no vendor binaries or model weights. The Windows portable release additionally redistributes Astral python-build-standalone CPython 3.11.17 (release 20261009), preserving the upstream LICENSE and component notices inside runtime/, and a pure-Python srt 3.5.3 wheel with its MIT license in wheels/. Other application dependencies, tools and model weights are downloaded on the user's machine after consent; they are not bundled in the portable ZIP.

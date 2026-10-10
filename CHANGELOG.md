@@ -1,8 +1,12 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 — 2026-10-10
 
-Default application UI, progress/errors, model instructions and generated reports now use Simplified Chinese. Normalize model-generated prose with OpenCC t2s while retaining original video titles, uploader names, URLs, subtitle SRT and verified timestamps. New output metadata records summary_language=zh-CN. Existing summaries and the published v0.2.1 archives are unchanged; a three-language selector is not included in this change.
+Simplified Chinese is the default. Application UI, progress, friendly error messages and summary generation support Simplified Chinese, Traditional Chinese and English. Page and summary languages can be selected separately, with the summary following the page by default. Stable widget keys preserve URL/device/permission settings when switching languages; project-local preferences survive restart.
+
+Saved summaries can generate additional language versions from retained prose and notes, without downloading the video again. Chinese script conversion uses OpenCC; English conversion uses the same local Qwen model. Originals and SRT remain untouched. Version reports/metadata publish together and are cached for immediate reuse. Preserve original titles, authors, URLs, verified timestamps and frame hashes. Translation uses the same task lock, bounded context and temp retention/cleanup rules as original processing.
+
+Release downloads include source, bundled-Python Windows and bundled-Python-with-Whisper Windows editions, SHA256 manifests and upstream notices. Test extracted Windows packages, native startup without PATH Python, all languages and real offline Whisper CPU loading before uploading. Other dependencies and the summary model still download after consent; no paid API or Ollama cloud. Existing v0.2.1 archives are unchanged.
 
 ## 0.2.1 — 2026-10-10
 

@@ -22,7 +22,7 @@ def build(version):
             path = root / name
             relative = Path(name)
             if (any(part in blocked for part in relative.parts) or name.startswith('.env')
-                    or relative.name == 'bookmark-settings.json' or relative.name.startswith('cookies')
+                    or relative.name in {'bookmark-settings.json', 'language-settings.json'} or relative.name.startswith('cookies')
                     or path.is_symlink() or not path.is_file() or path.stat().st_size > 200000):
                 raise ValueError(f'Unexpected tracked file: {name}')
             content = path.read_text(encoding='utf-8-sig').replace('\r\n', '\n')

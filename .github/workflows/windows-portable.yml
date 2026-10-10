@@ -53,8 +53,40 @@ jobs:
           Get-Content portable-test.log
           if ($process.ExitCode -ne 0) { throw 'Native launcher self-test failed' }
           Pop-Location
-      - name: Upload verified Windows download
+      - name: Build Whisper edition from this verified portable base
+        run: |
+          $zip = "dist/VideoSummarizer-$env:RELEASE_TAG-windows-x64.zip"
+          $sha = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          python scripts/build_model_bundle.py --version $env:RELEASE_TAG --portable-zip $zip --base-sha256 $sha
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Test real bundled Whisper offline and all application languages
+        run: |
+          Expand-Archive -LiteralPath "dist/VideoSummarizer-$env:RELEASE_TAG-windows-x64-with-whisper.zip" -DestinationPath whisper-verification
+          $bundle = (Resolve-Path whisper-verification/VideoSummarizer).Path
+          $python = Join-Path $bundle 'runtime/python.exe'
+          $env:TEMP = $env:TMP = Join-Path $bundle 'tools/install-temp'
+          New-Item -ItemType Directory -Path $env:TEMP -Force | Out-Null
+          & $python -m pip install --no-cache-dir --only-binary=:all: --find-links "$bundle/wheels" -r "$bundle/requirements.txt"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Push-Location $bundle
+          $env:HF_HUB_OFFLINE = '1'
+          @'
+          from whisper_models import ensure_model
+          from faster_whisper import WhisperModel
+          model = WhisperModel(str(ensure_model()), device='cpu', compute_type='int8', local_files_only=True)
+          print('Bundled Whisper small offline CPU load passed')
+          '@ | & $python -
+          if ($LASTEXITCODE -ne 0) { throw 'Offline Whisper load failed' }
+          & $python -m unittest discover -s tests -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $env:PATH = "$env:WINDIR\System32;$env:WINDIR"
+          Remove-Item Env:PYTHONHOME,Env:PYTHONPATH -ErrorAction SilentlyContinue
+          $process = Start-Process -FilePath "$bundle/VideoSummarizer.exe" -ArgumentList '--self-test' -Wait -PassThru -WindowStyle Hidden
+          Get-Content portable-test.log
+          if ($process.ExitCode -ne 0) { throw 'Whisper edition native self-test failed' }
+          Pop-Location
+      - name: Upload verified Windows downloads
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: gh release upload $env:RELEASE_TAG "dist/VideoSummarizer-$env:RELEASE_TAG-windows-x64.zip" dist/WINDOWS_SHA256SUMS.txt
+        run: gh release upload $env:RELEASE_TAG "dist/VideoSummarizer-$env:RELEASE_TAG-windows-x64.zip" "dist/VideoSummarizer-$env:RELEASE_TAG-windows-x64-with-whisper.zip" dist/WINDOWS_SHA256SUMS.txt dist/WITH_WHISPER_SHA256SUMS.txt

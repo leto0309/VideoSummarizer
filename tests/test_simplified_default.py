@@ -44,13 +44,15 @@ class SimplifiedDefaultTests(unittest.TestCase):
     def test_default_page_renders_simplified(self):
         from streamlit.testing.v1 import AppTest
         with patch('config.gpu_info', return_value={'name': 'Test GPU', 'vram_mib': 4000, 'driver': None}), \
-             patch('whisper_models.cached_model', return_value=None):
+             patch('whisper_models.cached_model', return_value=None), \
+             patch('preferences.load', return_value={'ui_language': 'zh-CN', 'summary_language': 'follow'}):
             app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / 'app.py')).run(timeout=30)
         self.assertFalse(app.exception)
         self.assertEqual(app.title[0].value, '🎬 本机视频摘要')
         self.assertIn('简体中文', app.caption[0].value)
-        self.assertEqual(app.selectbox[0].value, ALLOWED_MODELS[1])
-        self.assertEqual(app.selectbox[1].value, '自动：CUDA → CPU')
+        self.assertEqual(app.selectbox[0].value, 'zh-CN')
+        self.assertEqual(app.selectbox[2].value, ALLOWED_MODELS[1])
+        self.assertEqual(app.selectbox[3].value, 'auto')
         self.assertEqual(app.button[0].label, '开始生成摘要')
 
 

@@ -2,7 +2,15 @@
 
 Windows 免费本机视频摘要工具：Bilibili / b23.tv / YouTube、字幕优先、可选画面分析。
 
-开发分支已将默认网页界面、新生成的摘要、时间轴说明及画面描述改为简体中文。原始字幕 SRT、视频标题、作者、网址与时间戳保留原文；已有摘要文件不会自动改写。目前尚未提供三语切换。已发布的 v0.2.1 下载包仍为原来的繁中版本，此默认语言修改将随后续版本提供。
+**v0.3.0：默认简体中文，页面和摘要支持「简体中文 / 繁體中文 / English」分别选择。** 页面立即切换，输入链接、模型和 CPU/GPU 设置会保留；语言偏好保存在软件文件夹的 `language-settings.json`。摘要默认跟随页面，也可单独指定。页面切换不会自动调用模型或改写已有摘要。
+
+建议下载 [v0.3.0 Windows 内含 Whisper 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.0/VideoSummarizer-v0.3.0-windows-x64-with-whisper.zip)，完整解压后双击 `VideoSummarizer.exe`。包含 Python 和 Whisper small；首次仍需同意下载其他依赖、Ollama 和摘要模型。较小的 [标准 Windows 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.0/VideoSummarizer-v0.3.0-windows-x64.zip)不包含 Whisper 模型。旧版下载保留在 Releases 历史记录。
+
+已有摘要可点击「生成所选语言版本」。简繁转换通常无需模型；涉及英文或旧版没有独立摘要正文的输出，需要本机模型处理。原版与原始 SRT 保留，其他语言存放在任务的 `translations/语言代码/` 中，包含独立的 `summary.md` 与 `metadata.json`；生成过的版本可立即切换。来源标题、作者、网址、截图 SHA256 和精确时间戳保留原文。摘要仍可能有理解、翻译或专有名词错误，请核对原视频。浏览器、Windows 和 Streamlit 内置菜单不属于应用文字表；第三方原始错误写入日志，页面展示所选语言的处理建议。
+
+升级请解压到新的可写入文件夹，不覆盖旧版；正常关闭旧版服务或重启 Windows 后再启动新版，避免共用端口冲突。可自行复制旧版 `outputs` 与完整的 `models` 文件夹。不会自动改写旧摘要或迁移系统设置。
+
+## v0.2.1 及更早版本使用说明（历史）
 
 **v0.2.1 提供 Windows x64 便攜版，內置 Python 3.11.17，無需預先安裝 Python。** 解壓後雙擊 `VideoSummarizer.exe`。首次使用仍需同意自動下載影片/語音依賴、Ollama、Node.js 和模型；完成後直接啟動本機網頁。沒有付費 API，不使用 Ollama cloud。
 
