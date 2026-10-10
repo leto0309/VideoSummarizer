@@ -11,9 +11,9 @@ def validate_url(url):
     host = (value.hostname or '').lower()
     allowed = ('bilibili.com', 'b23.tv', 'youtube.com', 'youtu.be')
     if value.scheme != 'https' or value.username or value.password or value.port not in (None, 443):
-        raise ValueError('請輸入 HTTPS 的 Bilibili、b23.tv 或 YouTube 連結')
+        raise ValueError('请输入 HTTPS 的 Bilibili、b23.tv 或 YouTube 链接')
     if not any(host == h or host.endswith('.'+h) for h in allowed):
-        raise ValueError('只支援 Bilibili、b23.tv 與 YouTube')
+        raise ValueError('只支持 Bilibili、b23.tv 与 YouTube')
     return url.strip()
 
 
@@ -40,9 +40,9 @@ def inspect(url, task):
     with yt_dlp.YoutubeDL(opts) as ydl:
         info = ydl.extract_info(validate_url(url), download=False)
     if not info or info.get('_type') in ('playlist', 'multi_video') or info.get('is_live'):
-        raise RuntimeError('此工具只處理單支已完成的影片；不處理播放清單或直播')
+        raise RuntimeError('此工具只处理单支已完成的视频；不处理播放清单或直播')
     if info.get('has_drm') or info.get('availability') in ('premium_only', 'subscriber_only', 'needs_auth', 'private'):
-        raise RuntimeError('內容需要付費、登入或 DRM，已停止；不繞過存取限制')
+        raise RuntimeError('内容需要付费、登录或 DRM，已停止；不绕过访问限制')
     return info
 
 
@@ -87,7 +87,7 @@ def get_subtitles(info, task):
                     with ydl.urlopen(Request(track['url'], headers=headers)) as response:
                         raw = response.read(16 * 1024**2 + 1)
                     if len(raw) > 16 * 1024**2:
-                        raise RuntimeError('字幕超過 16 MB 限制')
+                        raise RuntimeError('字幕超过 16 MB 限制')
                     text = raw.decode('utf-8-sig')
                 cues = parse(text, track['ext'])
                 if cues:
@@ -95,13 +95,13 @@ def get_subtitles(info, task):
             except Exception as exc:
                 errors.append(str(exc)[:300])
     if candidates and errors:
-        raise RuntimeError('平台列出字幕但無法讀取，已停止以避免繞過限制：' + errors[0])
+        raise RuntimeError('平台列出字幕但无法读取，已停止以避免绕过限制：' + errors[0])
     return [], {'type': 'none', 'language': None}
 
 
 def download(info, task, video=False):
     if not info.get('formats') and not info.get('url'):
-        raise RuntimeError('平台沒有提供可公開下載的媒體格式；已停止，不嘗試登入或繞過限制。')
+        raise RuntimeError('平台没有提供可公开下载的媒体格式；已停止，不尝试登录或绕过限制。')
     guard()
     opts = options(task)
     opts['format'] = ('best[height<=480][vcodec!=none][acodec!=none]/bestvideo[height<=480]/worstvideo/worst[vcodec!=none]' if video
@@ -112,13 +112,13 @@ def download(info, task, video=False):
         # Re-extract with the explicit audio/video selector to avoid reusing those merge plans.
         result = ydl.extract_info(validate_url(info['webpage_url']), download=True)
         if result.get('id') != info.get('id'):
-            raise RuntimeError('下載的影片 ID 與先前驗證不符，停止處理')
+            raise RuntimeError('下载的视频 ID 与先前验证不符，停止处理')
         path = Path(ydl.prepare_filename(result))
     guard()
     if not path.is_file():
         matches = list(task.glob(('video' if video else 'audio') + '.*'))
         matches = [p for p in matches if p.suffix not in ('.part', '.ytdl')]
         if len(matches) != 1:
-            raise RuntimeError('下載完成但找不到唯一媒體檔案')
+            raise RuntimeError('下载完成但找不到唯一媒体文件')
         path = matches[0]
     return path

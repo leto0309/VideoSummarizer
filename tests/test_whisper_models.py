@@ -57,7 +57,7 @@ class WhisperModelTests(unittest.TestCase):
             with patch.object(models, 'MODELS', root / 'models'), patch.object(models, 'ROOT', root), \
                  patch.dict(sys.modules, {'huggingface_hub': SimpleNamespace(snapshot_download=download)}), \
                  patch.object(speech.subprocess, 'run') as worker:
-                with self.assertRaisesRegex(models.ModelUnavailableError, '切換 CPU'):
+                with self.assertRaisesRegex(models.ModelUnavailableError, '切换 CPU'):
                     speech.transcribe(root / 'audio.wav', root)
                 worker.assert_not_called()
                 download.assert_called_once()

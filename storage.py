@@ -20,11 +20,11 @@ def size(root=TEMP):
     if not root.exists():
         return 0
     if _unsafe(root):
-        raise RuntimeError('拒絕使用連結或 junction 作為暫存目錄')
+        raise RuntimeError('拒绝使用链接或 junction 作为暂存目录')
     total = 0
     for entry in root.rglob('*'):
         if _unsafe(entry):
-            raise RuntimeError('暫存目錄含連結，停止處理以保護非專案檔案')
+            raise RuntimeError('暂存目录含链接，停止处理以保护非项目文件')
         if entry.is_file():
             total += entry.stat().st_size
     return total
@@ -32,7 +32,7 @@ def size(root=TEMP):
 
 def guard(extra=0, root=TEMP):
     if size(root) + extra > TEMP_LIMIT - RESERVE:
-        raise RuntimeError('暫存接近 5 GB 上限；已停止。未滿 24 小時的失敗暫存會保留，請稍後重試。')
+        raise RuntimeError('暂存接近 5 GB 上限；已停止。未满 24 小时的失败暂存会保留，请稍后重试。')
 
 
 def _read(task):
@@ -53,9 +53,9 @@ def remove_task(task, root=TEMP):
     # Windows 8.3 aliases resolve to long names without being links. Reject
     # actual reparse points, including ancestors, rather than comparing names.
     if any(_unsafe(parent) for parent in (root, *root.parents)):
-        raise RuntimeError('拒絕清理連結或 junction 中的暫存')
+        raise RuntimeError('拒绝清理链接或 junction 中的暂存')
     if task.absolute().parent != root.absolute() or task.resolve().parent != root.resolve() or not _read(task):
-        raise RuntimeError('拒絕清理非本專案暫存')
+        raise RuntimeError('拒绝清理非本项目暂存')
     size(task)  # reject all reparse points before recursive removal
     shutil.rmtree(task)
 
@@ -74,7 +74,7 @@ def cleanup(root=TEMP, now=None):
             remove_task(task, root)
         elif data['status'] == 'running':
             # Called while holding the global pipeline lock: prior process was interrupted.
-            data.update(status='failed', failed_at=now, error='先前程序中斷')
+            data.update(status='failed', failed_at=now, error='先前程序中断')
             (task / 'task.json').write_text(json.dumps(data, ensure_ascii=False), encoding='utf-8')
         elif data['status'] == 'failed' and now - data.get('failed_at', now) >= 86400:
             remove_task(task, root)

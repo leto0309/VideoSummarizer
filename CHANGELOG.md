@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+Default application UI, progress/errors, model instructions and generated reports now use Simplified Chinese. Normalize model-generated prose with OpenCC t2s while retaining original video titles, uploader names, URLs, subtitle SRT and verified timestamps. New output metadata records summary_language=zh-CN. Existing summaries and the published v0.2.1 archives are unchanged; a three-language selector is not included in this change.
+
 ## 0.2.1 — 2026-10-10
 
 Additional Windows `with-whisper` download: unchanged v0.2.1 application and bundled Python plus verified public small-model files, official model card and original license. Users extract one ZIP into a new folder and launch the EXE; no source overlay or separate speech-model transfer is needed. Other first-launch dependencies and Ollama models still require downloads. A dedicated workflow loads the real bundled model offline and tests the extracted ZIP before upload. Standard source and Windows assets remain unchanged.

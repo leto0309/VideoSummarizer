@@ -24,7 +24,7 @@ def gpu_info():
         name, memory, driver = result.stdout.splitlines()[0].split(',')
         return {'name': name.strip(), 'vram_mib': int(memory.strip()), 'driver': driver.strip()}
     except (OSError, ValueError, subprocess.SubprocessError):
-        return {'name': '未偵測 NVIDIA GPU', 'vram_mib': 0, 'driver': None}
+        return {'name': '未侦测 NVIDIA GPU', 'vram_mib': 0, 'driver': None}
 
 
 def default_model():

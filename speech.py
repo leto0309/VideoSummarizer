@@ -24,12 +24,12 @@ def transcribe(audio, task, model='small', mode='auto'):
             data = json.loads(target.read_text(encoding='utf-8'))
             cues = [Cue(**c) for c in data['cues']]
             if not cues:
-                raise RuntimeError('音訊沒有可辨識語音，無法生成有依據的摘要')
+                raise RuntimeError('音频没有可识别语音，无法生成有依据的摘要')
             return cues, {'type': 'whisper', 'model': model, 'device': device,
                           'compute_type': 'int8_float16' if device == 'cuda' else 'int8',
                           'language': data['language'], 'fallback_reason': errors}
         errors.append(f'{device}: {result.stderr[-1200:]}')
-    raise RuntimeError('Whisper 轉錄失敗：' + '\n'.join(errors))
+    raise RuntimeError('Whisper 转录失败：' + '\n'.join(errors))
 
 
 def _worker(audio, target, model_name, device):
@@ -39,7 +39,7 @@ def _worker(audio, target, model_name, device):
     compute = 'int8_float16' if device == 'cuda' else 'int8'
     if device == 'cuda':
         if ctranslate2.get_cuda_device_count() < 1 or compute not in ctranslate2.get_supported_compute_types('cuda'):
-            raise RuntimeError('GPU 不支援 CUDA int8_float16')
+            raise RuntimeError('GPU 不支持 CUDA int8_float16')
     model = WhisperModel(model_name, device=device, compute_type=compute,
                          local_files_only=True, cpu_threads=4, num_workers=1)
     segments, info = model.transcribe(audio, beam_size=5, vad_filter=True,

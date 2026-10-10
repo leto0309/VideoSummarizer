@@ -34,7 +34,7 @@ def complete(folder):
 
 def cached_model(model='small'):
     if model != 'small':
-        raise ValueError('目前模型準備功能支援 Whisper small。')
+        raise ValueError('目前模型准备功能支持 Whisper small。')
     base = MODELS / 'whisper'
     # Flat folder supports offline transfer without cache symlinks or metadata.
     if complete(base / model):
@@ -71,7 +71,7 @@ def ensure_model(model='small', progress=lambda message: None):
         os.environ['HF_HUB_DISABLE_IMPLICIT_TOKEN'] = '1'
         os.environ.setdefault('HF_HUB_ETAG_TIMEOUT', '30')
         os.environ.setdefault('HF_HUB_DOWNLOAD_TIMEOUT', '120')
-        progress('下載 Whisper small（約 464 MiB）；來源：huggingface.co，完成後可離線轉錄。')
+        progress('下载 Whisper small（约 464 MiB）；来源：huggingface.co，完成后可离线转录。')
         try:
             from huggingface_hub import snapshot_download
             folder = Path(snapshot_download(
@@ -80,7 +80,7 @@ def ensure_model(model='small', progress=lambda message: None):
                                 'tokenizer.json', 'vocabulary.*'],
                 max_workers=2, etag_timeout=30))
             if not complete(folder):
-                raise RuntimeError('下載的模型缺少必要檔案，請重試。')
+                raise RuntimeError('下载的模型缺少必要文件，请重试。')
             return folder
         except Exception as exc:
             logs = ROOT / 'logs'
@@ -88,13 +88,13 @@ def ensure_model(model='small', progress=lambda message: None):
             with (logs / 'whisper-download.log').open('a', encoding='utf-8') as handle:
                 traceback.print_exc(file=handle)
             raise ModelUnavailableError(
-                'Whisper small 模型尚未準備完成：下載失敗或 Hugging Face 連線逾時。'
-                '\n這不是 CUDA/CPU 運算錯誤，切換 CPU 不會修復模型下載。'
-                '\n請檢查能否開啟 https://huggingface.co/Systran/faster-whisper-small，'
-                '再執行 prepare-whisper.bat 重試。'
-                '\n無法連線時，可從另一台已完成下載的電腦複製 models/whisper，'
-                '或將官方模型必要檔案放到 models/whisper/small。'
-                '\n詳細原因記錄於 logs/whisper-download.log；已下載的檔案會保留。'
+                'Whisper small 模型尚未准备完成：下载失败或 Hugging Face 连接超时。'
+                '\n这不是 CUDA/CPU 运算错误，切换 CPU 不会修复模型下载。'
+                '\n请检查能否开启 https://huggingface.co/Systran/faster-whisper-small，'
+                '再执行 prepare-whisper.bat 重试。'
+                '\n无法连接时，可从另一台已完成下载的电脑复制 models/whisper，'
+                '或将官方模型必要文件放到 models/whisper/small。'
+                '\n详细原因记录于 logs/whisper-download.log；已下载的文件会保留。'
             ) from exc
 
 
@@ -104,11 +104,11 @@ def main():
     args = parser.parse_args()
     if args.check:
         folder = cached_model()
-        print('Whisper small 已準備完成。' if folder else 'Whisper small 尚未準備完成。')
+        print('Whisper small 已准备完成。' if folder else 'Whisper small 尚未准备完成。')
         return 0 if folder else 1
     try:
         folder = ensure_model(progress=lambda message: print(message, flush=True))
-        print(f'Whisper small 已準備完成：{folder}', flush=True)
+        print(f'Whisper small 已准备完成：{folder}', flush=True)
         return 0
     except ModelUnavailableError as exc:
         print(str(exc), file=sys.stderr)

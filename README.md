@@ -1,6 +1,8 @@
 # VideoSummarizer
 
-Windows 免費本機影片摘要工具：Bilibili / b23.tv / YouTube、字幕優先、繁體中文摘要、可選畫面分析。
+Windows 免费本机视频摘要工具：Bilibili / b23.tv / YouTube、字幕优先、可选画面分析。
+
+开发分支已将默认网页界面、新生成的摘要、时间轴说明及画面描述改为简体中文。原始字幕 SRT、视频标题、作者、网址与时间戳保留原文；已有摘要文件不会自动改写。目前尚未提供三语切换。已发布的 v0.2.1 下载包仍为原来的繁中版本，此默认语言修改将随后续版本提供。
 
 **v0.2.1 提供 Windows x64 便攜版，內置 Python 3.11.17，無需預先安裝 Python。** 解壓後雙擊 `VideoSummarizer.exe`。首次使用仍需同意自動下載影片/語音依賴、Ollama、Node.js 和模型；完成後直接啟動本機網頁。沒有付費 API，不使用 Ollama cloud。
 

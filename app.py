@@ -3,44 +3,44 @@ import streamlit as st
 from config import ALLOWED_MODELS, OUTPUTS, default_model, gpu_info
 from pipeline import run
 
-st.set_page_config(page_title='本機影片摘要', page_icon='🎬', layout='wide')
-st.title('🎬 本機影片摘要')
-st.caption('免費本機 AI · 繁體中文 · 字幕優先 · 單一任務序列處理')
+st.set_page_config(page_title='本机视频摘要', page_icon='🎬', layout='wide')
+st.title('🎬 本机视频摘要')
+st.caption('免费本机 AI · 简体中文 · 字幕优先 · 单一任务序列处理')
 gpu = gpu_info()
-st.info(f'{gpu["name"]}｜VRAM {gpu["vram_mib"]} MiB｜Whisper 預設 small，CUDA 不相容時自動使用 CPU int8')
-with st.expander('Whisper 語音模型狀態 / 下載失敗處理'):
+st.info(f'{gpu["name"]}｜VRAM {gpu["vram_mib"]} MiB｜Whisper 默认 small，CUDA 不兼容时自动使用 CPU int8')
+with st.expander('Whisper 语音模型状态 / 下载失败处理'):
     from whisper_models import cached_model
     if cached_model():
-        st.success('Whisper small 必要檔案已就緒；轉錄時使用本機檔案，不再連線下載。')
+        st.success('Whisper small 必要文件已就绪；转录时使用本机文件，不再连接下载。')
     else:
-        st.warning('Whisper small 尚未準備完成。有字幕的影片可直接處理；無字幕影片需先下載語音模型。')
-        st.write('雙擊軟體資料夾中的 prepare-whisper.bat 預先下載（約 464 MiB）。'
-                 '如果 Hugging Face 無法連線，可複製其他電腦已下載的 models/whisper 資料夾；'
-                 '也可將官方模型檔案放到 models/whisper/small。詳見 README。')
+        st.warning('Whisper small 尚未准备完成。有字幕的视频可直接处理；无字幕视频需先下载语音模型。')
+        st.write('双击软件文件夹中的 prepare-whisper.bat 预先下载（约 464 MiB）。'
+                 '如果 Hugging Face 无法连接，可复制其他电脑已下载的 models/whisper 文件夹；'
+                 '也可将官方模型文件放到 models/whisper/small。详见 README。')
 with st.form('video'):
-    url = st.text_input('Bilibili、b23.tv 或 YouTube 連結', placeholder='https://www.bilibili.com/video/...')
-    visual = st.checkbox('加入約 8 張代表畫面的本機分析（需額外下載低解析度影片）', value=False)
-    model = st.selectbox('本機視覺語言模型', ALLOWED_MODELS, index=ALLOWED_MODELS.index(default_model()))
-    mode = st.selectbox('語音辨識運算', ['自動：CUDA → CPU', '只用 CPU int8'])
-    lawful = st.checkbox('我確認有權存取及處理此影片；此工具不繞過登入、付費、DRM 或平台限制。')
-    submit = st.form_submit_button('開始產生摘要', type='primary')
+    url = st.text_input('Bilibili、b23.tv 或 YouTube 链接', placeholder='https://www.bilibili.com/video/...')
+    visual = st.checkbox('加入约 8 张代表画面的本机分析（需额外下载低分辨率视频）', value=False)
+    model = st.selectbox('本机视觉语言模型', ALLOWED_MODELS, index=ALLOWED_MODELS.index(default_model()))
+    mode = st.selectbox('语音识别运算', ['自动：CUDA → CPU', '只用 CPU int8'])
+    lawful = st.checkbox('我确认有权访问及处理此视频；此工具不绕过登录、付费、DRM 或平台限制。')
+    submit = st.form_submit_button('开始生成摘要', type='primary')
 if submit:
     if not lawful:
-        st.warning('請先確認你有權處理這支影片。')
+        st.warning('请先确认你有权处理这支视频。')
     else:
-        with st.status('處理中，請保持頁面開啟', expanded=True) as status:
+        with st.status('处理中，请保持页面开启', expanded=True) as status:
             try:
                 folder = run(url, visual, model, mode='cpu' if mode.startswith('只用') else 'auto', progress=status.write)
                 st.session_state['result'] = str(folder)
                 status.update(label='完成', state='complete')
             except Exception as exc:
-                status.update(label='處理停止', state='error')
+                status.update(label='处理停止', state='error')
                 st.error(str(exc))
-                st.caption('失敗暫存保留 24 小時；下次任務自動清理過期的專案暫存。')
+                st.caption('失败暂存保留 24 小时；下次任务自动清理过期的项目暂存。')
 if 'result' in st.session_state:
     from pathlib import Path
     folder = Path(st.session_state['result'])
-    st.success(f'產出已保留：{folder}')
+    st.success(f'产出已保留：{folder}')
     for filename, mime in [('summary.md', 'text/markdown'), ('subtitles.srt', 'text/plain'), ('metadata.json', 'application/json')]:
-        st.download_button('下載 ' + filename, (folder / filename).read_bytes(), file_name=filename, mime=mime)
+        st.download_button('下载 ' + filename, (folder / filename).read_bytes(), file_name=filename, mime=mime)
     st.markdown((folder / 'summary.md').read_text(encoding='utf-8'))
