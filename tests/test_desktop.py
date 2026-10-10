@@ -18,10 +18,10 @@ class DesktopTests(unittest.TestCase):
             root = Path(folder)
             with patch.object(desktop, 'ROOT', root), patch.object(desktop, 'READY', root / 'ready.json'), \
                  patch.object(desktop, 'dependencies_ready', return_value=False), \
-                 patch.object(desktop.subprocess, 'run', side_effect=subprocess.CalledProcessError(1, 'pip')) as run:
+                 patch('install_support.install_requirements', side_effect=subprocess.CalledProcessError(1, 'pip')) as run:
                 with self.assertRaises(subprocess.CalledProcessError):
                     desktop.prepare()
-                self.assertEqual(run.call_args.args[0][0], sys.executable)
+                self.assertEqual(run.call_args.args[0], root / 'requirements.txt')
                 self.assertFalse((root / 'ready.json').exists())
 
     def test_ready_requires_tools_and_marker(self):

@@ -44,7 +44,7 @@ url = st.text_input(tr(ui, 'url'), placeholder='https://www.bilibili.com/video/.
 visual = st.checkbox(tr(ui, 'visual'), value=False, key='visual')
 model = st.selectbox(tr(ui, 'model'), ALLOWED_MODELS,
                      index=ALLOWED_MODELS.index(default_model()), key='model')
-mode = st.selectbox(tr(ui, 'mode'), ('auto', 'cpu'), format_func=lambda code: tr(ui, code), key='mode')
+mode = st.selectbox(tr(ui, 'mode'), ('auto', 'cpu'), index=1, format_func=lambda code: tr(ui, code), key='mode')
 lawful = st.checkbox(tr(ui, 'lawful'), key='lawful')
 
 def show_error(exc):

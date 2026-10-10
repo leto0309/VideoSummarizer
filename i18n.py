@@ -11,7 +11,7 @@ TEXT = {
  'summary_language': ('摘要语言', 'Summary language'),
  'follow': ('跟随页面语言', 'Follow page language'),
  'caption': ('免费本机 AI · 字幕优先 · 单一任务序列处理', 'Free local AI · Subtitles first · One task at a time'),
- 'gpu': ('{name}｜VRAM {memory} MiB｜Whisper 默认 small，CUDA 不兼容时自动使用 CPU int8', '{name} | VRAM {memory} MiB | Whisper small; CPU int8 fallback if CUDA is incompatible'),
+ 'gpu': ('{name}｜VRAM {memory} MiB｜Whisper 默认 small / CPU int8；GPU 加速可通过 install-gpu.bat 单独安装，再选择自动模式', '{name} | VRAM {memory} MiB | Whisper small / CPU int8 by default; run install-gpu.bat for optional GPU acceleration, then select Automatic'),
  'no_gpu': ('未检测到 NVIDIA GPU', 'No NVIDIA GPU detected'),
  'model_status': ('Whisper 语音模型状态 / 下载失败处理', 'Whisper model status / Download help'),
  'model_ready': ('Whisper small 文件已就绪；转录使用本机文件，不再连接下载。', 'Whisper small is ready. Transcription uses local files without another download.'),

@@ -76,11 +76,7 @@ def setup():
         archive.unlink()  # exact project-owned installer only, never a model
     else:
         print('已找到项目内 Ollama，跳过 Ollama 程序下载。', flush=True)
-    print('Installing optional CUDA runtime wheels (CPU fallback is always available)...')
-    result = subprocess.run([sys.executable, '-m', 'pip', 'install', '--only-binary=:all:',
-                             '--no-cache-dir', '-r', str(ROOT / 'requirements-gpu.txt')])
-    if result.returncode:
-        print('CUDA runtime unavailable. Whisper will use CPU int8.')
+    print('首次配置默认跳过可选 CUDA 库。Whisper 可使用 CPU int8；GPU 加速可稍后双击 install-gpu.bat 安装。', flush=True)
     from launcher import pull
     pull()
     # Subtitle-only use remains available if the speech model host is unreachable.

@@ -122,6 +122,7 @@ def build(portable_zip=None, model_dir=None, version=VERSION, base_sha256=None):
 
 完整解压到可写入的 Windows 10 22H2 / Windows 11 x64 文件夹，双击 VideoSummarizer.exe。无需安装系统 Python。
 Whisper small 已包含在 models/whisper/small，转录无需访问 Hugging Face。首次仍需同意下载其他依赖、Ollama、Node.js 和摘要模型；这不是全部依赖预装的离线包。
+首次配置默认跳过 CUDA 库，语音转录默认 CPU int8。GPU 加速可稍后双击 install-gpu.bat 单独安装，可查看下载进度或取消，20 分钟总时限，失败不影响 CPU 模式。
 默认简体中文。页面和摘要可分别选择简体中文、繁體中文或 English。已有摘要可保留原版并生成其他语言版本；原始字幕和时间戳不改写。英文版本需要本机模型处理。
 请使用独立文件夹。旧版仍在运行时，先正常关闭旧版服务或重启 Windows，再打开新版；两份程序共用 8501 / 11435 端口。
 Whisper 来源：https://huggingface.co/Systran/faster-whisper-small

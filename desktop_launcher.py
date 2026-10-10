@@ -42,9 +42,9 @@ def needs_setup():
 def prepare():
     print('首次配置：正在安裝影片與 AI 依賴，可能需要數 GB 下載與空間。', flush=True)
     if not dependencies_ready():
-        subprocess.run([sys.executable, '-m', 'pip', 'install', '--no-cache-dir',
-                        '--only-binary=:all:', '--find-links', str(ROOT / 'wheels'),
-                        '-r', str(ROOT / 'requirements.txt')], check=True, cwd=ROOT)
+        from install_support import install_requirements
+        install_requirements(ROOT / 'requirements.txt', root=ROOT,
+                             progress=lambda message: print(message, flush=True))
     from setup_runtime import setup
     setup()
     READY.write_text(json.dumps({'version': 1}), encoding='utf-8')
@@ -95,12 +95,21 @@ def main():
     parser.add_argument('--setup', action='store_true')
     parser.add_argument('--self-test', action='store_true')
     parser.add_argument('--check', action='store_true')
+    parser.add_argument('--install-gpu', action='store_true')
     args = parser.parse_args()
     if args.self_test:
         self_test()
         return
     if args.check:
         sys.exit(10 if needs_setup() else 0)
+    if args.install_gpu:
+        if needs_setup():
+            raise RuntimeError('请先打开 VideoSummarizer.exe 完成首次配置，再安装可选 GPU 加速。')
+        from startup_lock import StartupMutex
+        from gpu_setup import install_gpu
+        with StartupMutex():
+            install_gpu(progress=lambda message: print(message, flush=True))
+        return
     if args.setup:
         from startup_lock import StartupMutex
         with StartupMutex():

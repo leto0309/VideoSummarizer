@@ -1,5 +1,19 @@
 # VideoSummarizer
 
+## v0.3.2：首次配置不再等待 CUDA 下载
+
+建议下载 [v0.3.2 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.2/VideoSummarizer-v0.3.2-windows-x64-with-whisper-ollama.zip)。完整解压到新的可写入文件夹，停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。不需要预装 Python，也不需要 v0.3.1 的临时启动补丁。
+
+首次配置默认跳过可选 CUDA Python 库，网页默认选择 CPU int8 语音转录；解决大文件 CUDA 下载阻塞整个首次启动的问题。CPU 转录通常较慢；Ollama 的 GPU 使用仍由 Ollama 自行检测，不受 Whisper 运算模式影响。其他依赖、Node.js 和 Qwen 摘要模型仍需联网下载，本版不是完全离线包。
+
+需要 NVIDIA GPU 加速时，在首次配置完成、当前摘要任务结束后，双击 `install-gpu.bat` 并同意下载。GPU 安装窗口显示下载字节数和百分比，限制重试次数，并设 **20 分钟整体时限**；失败、超时或取消不清除模型、摘要和 CPU 就绪状态。安装完成后，在摘要任务结束时重启程序，网页改选「自动：CUDA → CPU」。GPU 是否兼容仍需真实转录验证，不保证所有显卡或驱动均可使用。
+
+首次配置的 Python 依赖安装也显示持续进度，每次设 **45 分钟整体时限**。Windows 配置窗口新增「取消配置」按钮；确认取消后只停止本次安装子进程树，保留现有模型和摘要，可重新打开软件重试。Node/Ollama 程序下载与模型下载仍按各自网络超时处理，这些步骤没有统一的 45 分钟总时限。日志保留在 `logs/install.log` 与 `logs/desktop.log`。本地 pip 下载缓存存放于 `tools/pip-cache`，仅复用已经缓存的数据，不承诺所有部分下载均可跨次续传。
+
+保留简体中文默认设置，以及页面和摘要独立切换简体中文、繁體中文和 English 的功能。升级使用新文件夹，不覆盖旧版；模型和历史产出可自行复制完整的 `models` 与 `outputs` 文件夹。不要复制旧版 `portable-ready.json`、补丁文件或 `skip-cuda-install.flag`。
+
+以下内容是历史版本说明；其中自动安装 CUDA 的描述仅适用于旧版。
+
 ## v0.3.1：内置 Ollama 的 Windows 下载
 
 建议下载 [v0.3.1 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.1/VideoSummarizer-v0.3.1-windows-x64-with-whisper-ollama.zip)。包含 Python、Whisper small 和完整官方 Ollama 0.40.2 Windows x64 程序及运行库；首次配置直接使用包内 Ollama，解决安装时下载 Ollama ZIP 连接中断的问题。解压到新文件夹，停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。请至少预留 15 GB 空间，保留 `tools/ollama` 下全部文件。

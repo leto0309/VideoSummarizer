@@ -54,6 +54,9 @@ jobs:
           $process = Start-Process -FilePath $exe -ArgumentList '--self-test' -Wait -PassThru -WindowStyle Hidden
           Get-Content portable-test.log
           if ($process.ExitCode -ne 0) { throw 'Native launcher self-test failed' }
+          $cancel = Start-Process -FilePath $exe -ArgumentList '--self-test-cancel' -Wait -PassThru -WindowStyle Hidden
+          Get-Content cancel-test.log
+          if ($cancel.ExitCode -ne 0) { throw 'Native cancellation test failed' }
           Pop-Location
       - name: Build Whisper edition from this verified portable base
         run: |

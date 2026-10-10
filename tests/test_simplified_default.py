@@ -52,7 +52,7 @@ class SimplifiedDefaultTests(unittest.TestCase):
         self.assertIn('简体中文', app.caption[0].value)
         self.assertEqual(app.selectbox[0].value, 'zh-CN')
         self.assertEqual(app.selectbox[2].value, ALLOWED_MODELS[1])
-        self.assertEqual(app.selectbox[3].value, 'auto')
+        self.assertEqual(app.selectbox[3].value, 'cpu')
         self.assertEqual(app.button[0].label, '开始生成摘要')
 
 

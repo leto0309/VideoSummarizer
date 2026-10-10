@@ -152,7 +152,8 @@ def build(version, base_sha256, whisper_zip=None, ollama_zip=None):
 
 完整解压到可写入的 Windows 10 22H2 / Windows 11 x64 文件夹，双击 VideoSummarizer.exe。无需手动安装 Python。
 已包含 Python、Whisper small 和完整官方 Ollama {OLLAMA_VERSION} Windows x64 程序及运行库。首次配置会跳过 Ollama 程序下载；Whisper 转录不必访问 Hugging Face。
-仍需在首次同意后下载其他 Python 依赖、FFmpeg、Node.js、可选 CUDA wheel 和 Qwen 摘要模型。本包不是完全离线包，也不保证所有网络均可完成这些剩余下载。
+首次配置默认跳过 CUDA 库，语音转录默认 CPU int8。GPU 加速可稍后双击 install-gpu.bat 单独安装，带下载进度、20 分钟总时限和取消按钮；失败不影响 CPU 模式。
+仍需在首次同意后下载其他 Python 依赖、FFmpeg、Node.js 和 Qwen 摘要模型。本包不是完全离线包，也不保证所有网络均可完成这些剩余下载。
 默认简体中文，页面和摘要可分别切换简体中文、繁體中文或 English。已有摘要可生成其他语言版本，保留原始 SRT、摘要和时间戳。
 请至少预留 15 GB 可用空间，完整解压并保留 tools/ollama 下所有 DLL 和许可文件。旧程序仍在后台时，先正常停止旧版服务或重启 Windows，再打开新文件夹；共用端口 8501 / 11435。
 原版 Ollama ZIP：{OLLAMA_URL}
