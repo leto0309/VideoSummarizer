@@ -1,6 +1,9 @@
 import hashlib
 import json
+import os
 from pathlib import Path
+import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -10,6 +13,34 @@ import scripts.build_model_bundle as bundle
 from scripts.build_model_bundle import build, extract_base, verify
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def stand_in_build(root, **options):
+    """Build from small stand-ins in a temporary checkout: real checksum and packaging path, no downloads."""
+    models = root / 'models'
+    models.mkdir()
+    files = {}
+    for name in bundle.FILES:
+        (models / name).write_bytes(b'stand-in ' + name.encode())
+        files[name] = hashlib.sha256((models / name).read_bytes()).hexdigest()
+    base = root / 'portable.zip'
+    with zipfile.ZipFile(base, 'w') as package:
+        package.writestr('VideoSummarizer/PORTABLE_BUILD.json',
+                         json.dumps({'version': RELEASE_TAG, 'edition': 'windows-x64'}))
+        package.writestr('VideoSummarizer/app_version.py', (ROOT / 'app_version.py').read_text(encoding='utf-8'))
+        for name in ('README.md', 'THIRD_PARTY_NOTICES.md'):
+            package.writestr('VideoSummarizer/' + name, 'base')
+    base_digest = bundle.digest(base)
+
+    def offline_notice(url, target):
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text('offline notice', encoding='utf-8')
+
+    with patch.object(bundle, 'ROOT', root / 'checkout'), patch.object(bundle, 'FILES', files), \
+         patch.object(bundle, 'download', side_effect=offline_notice):
+        build(portable_zip=base, model_dir=models, base_sha256=base_digest, **options)
+    output = root / 'checkout/dist' / f'VideoSummarizer-{RELEASE_TAG}-windows-x64-with-whisper.zip'
+    return output, base_digest, files
 
 
 class ModelBundleTests(unittest.TestCase):
@@ -36,33 +67,27 @@ class ModelBundleTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'SHA256'):
             build(version='v0.3.0')
 
+    def test_current_release_has_no_builtin_base_digest(self):
+        with tempfile.TemporaryDirectory() as folder, patch.object(bundle, 'ROOT', Path(folder)):
+            with self.assertRaisesRegex(ValueError, 'SHA256'):
+                build()
+            self.assertFalse((Path(folder) / 'build').exists())
+
+    def test_command_line_requires_verified_base_digest(self):
+        with tempfile.TemporaryDirectory() as folder:
+            # An existing input keeps every code path offline even if the argument check regressed.
+            existing = Path(folder) / 'portable.zip'
+            existing.write_bytes(b'not checked')
+            result = subprocess.run([sys.executable, '-B', str(ROOT / 'scripts/build_model_bundle.py'),
+                                     '--portable-zip', str(existing)], cwd=folder, capture_output=True,
+                                    text=True, encoding='utf-8', errors='replace', timeout=120,
+                                    env={**os.environ, 'PYTHONIOENCODING': 'utf-8'})
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertIn('--base-sha256', result.stderr)
+
     def test_bundle_record_keeps_verified_portable_base_digest(self):
         with tempfile.TemporaryDirectory() as folder:
-            root = Path(folder)
-            models = root / 'models'
-            models.mkdir()
-            # Small stand-ins exercise the real checksum and packaging path without downloading Whisper.
-            files = {}
-            for name in bundle.FILES:
-                (models / name).write_bytes(b'stand-in ' + name.encode())
-                files[name] = hashlib.sha256((models / name).read_bytes()).hexdigest()
-            base = root / 'portable.zip'
-            with zipfile.ZipFile(base, 'w') as package:
-                package.writestr('VideoSummarizer/PORTABLE_BUILD.json',
-                                 json.dumps({'version': RELEASE_TAG, 'edition': 'windows-x64'}))
-                package.writestr('VideoSummarizer/app_version.py', (ROOT / 'app_version.py').read_text(encoding='utf-8'))
-                for name in ('README.md', 'THIRD_PARTY_NOTICES.md'):
-                    package.writestr('VideoSummarizer/' + name, 'base')
-            base_digest = bundle.digest(base)
-
-            def offline_notice(url, target):
-                target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_text('offline notice', encoding='utf-8')
-
-            with patch.object(bundle, 'ROOT', root / 'checkout'), patch.object(bundle, 'FILES', files), \
-                 patch.object(bundle, 'download', side_effect=offline_notice):
-                build(portable_zip=base, model_dir=models, version=RELEASE_TAG, base_sha256=base_digest)
-            output = root / 'checkout/dist' / f'VideoSummarizer-{RELEASE_TAG}-windows-x64-with-whisper.zip'
+            output, base_digest, files = stand_in_build(Path(folder), version=RELEASE_TAG)
             with zipfile.ZipFile(output) as package:
                 record = json.loads(package.read('VideoSummarizer/WHISPER_BUNDLE.json'))
                 bundled = {name: hashlib.sha256(package.read('VideoSummarizer/models/whisper/small/' + name)).hexdigest()
@@ -71,6 +96,27 @@ class ModelBundleTests(unittest.TestCase):
             self.assertNotIn(record['base_sha256'], files.values())
             self.assertEqual(record['files_sha256'], files)
             self.assertEqual(bundled, files)
+
+    def test_default_release_and_edition_notes_follow_application_version(self):
+        with tempfile.TemporaryDirectory() as folder:
+            output, _, _ = stand_in_build(Path(folder))
+            with zipfile.ZipFile(output) as package:
+                notes = package.read('VideoSummarizer/WHISPER-EDITION.md').decode('utf-8')
+                readme = package.read('VideoSummarizer/README.md').decode('utf-8')
+                record = json.loads(package.read('VideoSummarizer/WHISPER_BUNDLE.json'))
+            self.assertEqual(record['version'], RELEASE_TAG)
+            self.assertTrue(notes.startswith(f'# {RELEASE_TAG} Windows 内含 Whisper 版'))
+            self.assertTrue(readme.startswith(notes))
+            self.assertNotIn('v0.2.1', notes)
+
+    def test_release_workflows_pass_version_and_verified_base_digest(self):
+        calls = [line.strip() for workflow in sorted((ROOT / '.github/workflows').glob('*.yml'))
+                 for line in workflow.read_text(encoding='utf-8').splitlines() if 'build_model_bundle.py' in line]
+        self.assertTrue(calls)
+        for line in calls:
+            with self.subTest(line=line):
+                self.assertIn('--version', line)
+                self.assertIn('--base-sha256', line)
 
 
 if __name__ == '__main__':
