@@ -83,8 +83,8 @@ def extract_base(archive, destination):
 def build(portable_zip=None, model_dir=None, version=VERSION, base_sha256=None):
     if not re.fullmatch(r'v\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?', version):
         raise ValueError('Invalid release version')
-    expected = base_sha256 or (BASE_SHA256 if version == VERSION else None)
-    if not expected or not re.fullmatch(r'[0-9a-f]{64}', expected):
+    base_digest = base_sha256 or (BASE_SHA256 if version == VERSION else None)
+    if not base_digest or not re.fullmatch(r'[0-9a-f]{64}', base_digest):
         raise ValueError('A verified portable base SHA256 is required for new versions')
     validate_release_version(version)
     base_name = f'VideoSummarizer-{version}-windows-x64.zip'
@@ -93,7 +93,7 @@ def build(portable_zip=None, model_dir=None, version=VERSION, base_sha256=None):
     base = Path(portable_zip) if portable_zip else cache / base_name
     if not base.exists():
         download(f'https://github.com/leto0309/VideoSummarizer/releases/download/{version}/' + base_name, base)
-    verify(base, expected)
+    verify(base, base_digest)
     destination = ROOT / 'build' / ('with-whisper-' + version)
     if destination.exists():
         raise ValueError('Bundle staging already exists; preserve it and use a fresh checkout')
@@ -108,13 +108,13 @@ def build(portable_zip=None, model_dir=None, version=VERSION, base_sha256=None):
         portable_record(record, version, 'windows-x64-with-whisper'), indent=2), encoding='utf-8')
     model_target = bundle / 'models' / 'whisper' / 'small'
     model_target.mkdir(parents=True)
-    for name, expected in FILES.items():
+    for name, expected_file_hash in FILES.items():
         source = Path(model_dir) / name if model_dir else cache / name
         if not source.exists():
             if model_dir:
                 raise FileNotFoundError(source)
             download(MODEL_BASE + name, source)
-        verify(source, expected)
+        verify(source, expected_file_hash)
         shutil.copyfile(source, model_target / name)
     notices = bundle / 'vendor-notices' / 'whisper'
     notices.mkdir(parents=True)
@@ -144,7 +144,7 @@ Whisper 来源：https://huggingface.co/Systran/faster-whisper-small
                           'with their original MIT license and model card in vendor-notices/whisper. '
                           'The standard portable edition described below remains model-free.\n\n'
                           + third_party.read_text(encoding='utf-8'), encoding='utf-8')
-    record = {'version': version, 'edition': 'windows-x64-with-whisper', 'base_sha256': expected,
+    record = {'version': version, 'edition': 'windows-x64-with-whisper', 'base_sha256': base_digest,
               'whisper_repository': 'Systran/faster-whisper-small', 'revision': REVISION,
               'files_sha256': FILES, 'other_dependencies': 'download after first-launch consent'}
     (bundle / 'WHISPER_BUNDLE.json').write_text(json.dumps(record, indent=2), encoding='utf-8')
