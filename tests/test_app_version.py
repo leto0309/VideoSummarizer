@@ -78,6 +78,14 @@ class AppVersionTests(unittest.TestCase):
         else:
             self.assertEqual(info.edition, 'source')
 
+    def test_release_documents_lead_with_running_version(self):
+        # Edition notes prepended to packaged README files have no level-2 headings.
+        headings = {name: next(line for line in (ROOT / name).read_text(encoding='utf-8').splitlines()
+                               if line.startswith('## '))
+                    for name in ('CHANGELOG.md', 'README.md')}
+        self.assertTrue(headings['CHANGELOG.md'].startswith(f'## {VERSION} '), headings['CHANGELOG.md'])
+        self.assertTrue(headings['README.md'].startswith(f'## {RELEASE_TAG}：'), headings['README.md'])
+
     def test_three_language_page_shows_version_and_about_without_network(self):
         with patch('config.gpu_info', return_value={'name': 'Test GPU', 'vram_mib': 4000, 'driver': None}), \
              patch('whisper_models.cached_model', return_value=None), \
