@@ -86,6 +86,13 @@ class AppVersionTests(unittest.TestCase):
         self.assertTrue(headings['CHANGELOG.md'].startswith(f'## {VERSION} '), headings['CHANGELOG.md'])
         self.assertTrue(headings['README.md'].startswith(f'## {RELEASE_TAG}：'), headings['README.md'])
 
+    def test_readme_keeps_earlier_release_notes_under_history(self):
+        sections = [line for line in (ROOT / 'README.md').read_text(encoding='utf-8').splitlines()
+                    if line.startswith('## ')]
+        # Only the running release is a top-level section; older notes must not read as current steps.
+        self.assertEqual([line for line in sections if line.startswith('## v')], [sections[0]])
+        self.assertEqual(sections[-1], '## 历史版本说明')
+
     def test_three_language_page_shows_version_and_about_without_network(self):
         with patch('config.gpu_info', return_value={'name': 'Test GPU', 'vram_mib': 4000, 'driver': None}), \
              patch('whisper_models.cached_model', return_value=None), \
