@@ -1,16 +1,141 @@
 # VideoSummarizer
 
+Windows 免费本机视频摘要工具：Bilibili / b23.tv / YouTube、字幕优先、可选画面分析。语音识别和摘要都在本机运行，不使用付费 API 或 Ollama cloud。
+
 ## v0.3.4：修正内含 Whisper 安装包的来源记录
 
 建议下载 [v0.3.4 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.4/VideoSummarizer-v0.3.4-windows-x64-with-whisper-ollama.zip)，完整解压到新的可写入文件夹。停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。页面标题下会显示 `VideoSummarizer · 当前运行版本：v0.3.4`。
 
 v0.3.4 是维护版本，程序功能与 v0.3.3 相同。内含 Whisper 的两种安装包中，`WHISPER_BUNDLE.json` 的 `base_sha256` 现在记录实际使用的标准便携包 SHA256；v0.3.3 及更早版本误记为 `vocabulary.txt` 的哈希。标准便携包和 Whisper 模型文件一直逐一校验，这个错误只影响来源记录，不影响运行。v0.3.3 运行正常的用户不必为此升级。
 
-保留 v0.3.2 起的 CPU int8 默认设置、首次配置跳过 CUDA 和独立 `install-gpu.bat`。内含 Whisper + Ollama 版仍需首次同意后联网下载其他 Python 依赖、Node.js 与 Qwen 摘要模型，不是完全离线包。升级方法与 v0.3.3 相同：使用新文件夹，可复制完整的 `models` 和 `outputs`，不要复制旧版就绪标记、日志、补丁或 `PORTABLE_BUILD.json`。
+保留 v0.3.2 起的 CPU int8 默认设置、首次配置跳过 CUDA 和独立 `install-gpu.bat`。内含 Whisper + Ollama 版仍需首次同意后联网下载其他 Python 依赖、Node.js 与 Qwen 摘要模型，不是完全离线包。升级方法见下方「升级」。
 
-以下保留此前版本的说明。
+以下是当前版本的使用说明。各版本发布时的说明集中在文末「历史版本说明」，只适用于当时的版本。
 
-## v0.3.3：页面显示当前运行版本
+## 下载与安装
+
+### Windows 便携版（推荐）
+
+[Releases](https://github.com/leto0309/VideoSummarizer/releases) 提供三种 Windows x64 便携版，都内置 Python 3.11，不需要预先安装 Python：
+
+| 安装包 | 大小（约） | 已包含 |
+|---|---|---|
+| `windows-x64-with-whisper-ollama.zip`（推荐） | 1.97 GB | Python、Whisper small 语音模型、官方 Ollama 程序 |
+| `windows-x64-with-whisper.zip` | 500 MB | Python、Whisper small 语音模型 |
+| `windows-x64.zip` | 49 MB | Python |
+
+三种都不是完全离线包。首次启动时会询问是否同意下载其余 Python 依赖（含 FFmpeg）、Node.js、包内没有的 Ollama 程序或 Whisper 模型，以及 Qwen 摘要模型，合计可能数 GB；请至少预留 15 GB 磁盘空间。
+
+1. 下载 ZIP；需要时用发布页的 `*_SHA256SUMS.txt` 核对 SHA256。完整解压到有写入权限的新文件夹，不要直接在 ZIP 里运行。
+2. 双击 `VideoSummarizer.exe`，同意后在进度窗口自动配置。Python 依赖安装显示进度，设 45 分钟整体时限，可点「取消配置」；取消或失败会保留已有模型和摘要，重新打开即可重试。
+3. 配置完成后自动打开 <http://127.0.0.1:8501/>。之后再双击同一个 EXE，会启动或重用这个文件夹的后台服务；关闭网页或进度窗口不会停止后台服务。
+
+便携版不修改系统 PATH、不注册系统 Python、不需要管理员权限。首次配置默认跳过可选的 CUDA 运行库，语音识别使用 CPU int8。日志在 `logs/`，安装日志为 `logs/install.log` 和 `logs/desktop.log`。
+
+### 可选：Whisper GPU 加速
+
+需要 NVIDIA GPU 加速语音识别时，在首次配置完成、且没有摘要任务运行时，双击 `install-gpu.bat` 并同意下载（超过 1 GB）。窗口显示下载进度，设 20 分钟整体时限，可以取消；失败、超时或取消都不影响 CPU 模式，也不删除模型和摘要。
+
+安装完成后重启程序，在网页的「语音识别运算」改选「自动：CUDA → CPU」。安装成功不代表显卡一定兼容；实际转录失败时会自动回退 CPU。Ollama 是否使用 GPU 由 Ollama 自行检测，与这个设置无关。
+
+### 升级
+
+1. 把新版完整解压到**新的**文件夹。不要覆盖旧文件夹，也不要把新版文件零散复制进旧文件夹。
+2. 关闭旧版服务或重启 Windows。两个版本共用 `8501` / `11435` 端口，不能同时运行。
+3. 需要保留模型和历史摘要时，复制完整的 `models` 和 `outputs` 文件夹。不要复制 `portable-ready.json`、`logs`、`PORTABLE_BUILD.json`、`runtime`、`.venv` 或旧版补丁文件。
+4. 用过 Chrome 书签时，先在旧文件夹运行 `remove-bookmark.bat`，再在新文件夹运行 `install-bookmark.bat`；已注册到旧文件夹的连接不会被自动覆盖。
+5. 打开新版后，确认页面标题下的「当前运行版本」。它显示的是后台实际运行的版本；如果仍是旧版本，说明旧版服务还在运行。
+
+### 开发者：源码版（需要 Python 3.11）
+
+1. 下载 Releases 中的 `source.zip`，解压到有写入权限的文件夹。
+2. 从 [Python 官方网站](https://www.python.org/downloads/windows/) 安装 64 位 Python 3.11。
+3. 双击 `setup.bat` 并同意项目内下载。它会创建 `.venv`，安装 Python 依赖，下载 Node.js、Ollama、默认 Qwen 摘要模型和 Whisper small，并运行诊断；不会安装 CUDA 运行库。
+4. 双击 `start.bat`，等待启动成功后打开 <http://127.0.0.1:8501/>，保持启动窗口开启。
+5. 需要 GPU 加速时，同样使用 `install-gpu.bat`。
+
+在便携版文件夹里运行 `setup.bat`、`start.bat` 或 `install-gpu.bat`，会直接转交给 `VideoSummarizer.exe`。安装器不安装系统 CUDA Toolkit，不修改全局 PATH。
+
+## 环境与模型
+
+- 目标系统：Windows 10 22H2 / Windows 11 x64。其他系统未验证。
+- 建议 16 GB 内存，并预留至少 15 GB 磁盘空间；这是建议配置，不是验证过的最低需求。
+- 语音识别：Whisper `small`，默认 CPU `int8`；安装 GPU 加速并选择「自动」后，兼容的 NVIDIA GPU 使用 CUDA `int8_float16`，失败回退 CPU。CPU 处理长视频可能较慢。
+- Whisper small 约 464 MiB，内含 Whisper 的安装包已附带；其他情况从 Hugging Face 官方仓库下载到 `models/whisper`。本机已有完整模型时直接使用，转录时不再联网检查。
+- 摘要模型：Ollama `qwen3-vl:4b-instruct`；未检测到 NVIDIA GPU，或显存少于 6000 MiB 时使用 `qwen3-vl:2b-instruct`。推理速度取决于硬件。
+- 上下文 4096 tokens，长字幕分段摘要后再合并。Whisper 和 Ollama 依次运行，同一时间只处理一个摘要任务。
+- 本机端点：网页 `127.0.0.1:8501`，项目 Ollama `127.0.0.1:11435`，都不对外开放。
+
+自动测试验证程序逻辑；发布流程还会在解压后的 Windows 包里运行测试、启动器自检，并离线加载 Whisper。它们都不执行摘要模型推理或平台视频下载。早期版本曾在一台 RTX 3050 Laptop（4 GB 显存）/ 16 GB 内存的 Windows 电脑上验证完整视频流程（字幕、CUDA / CPU 转录与画面时间戳），这不代表所有设备或每个视频都可用。
+
+## 摘要、产出与清理
+
+先读取人工字幕，其次自动字幕；确实没有字幕时才下载音频并用 Whisper 转录。可选下载低分辨率视频，用 FFmpeg 截取约 8 张均匀分布的画面，时间取自实际解码画面的 PTS。
+
+成功的产出保存在 `outputs/日期时间_任务ID/`：
+
+- `summary.md`：视频信息、摘要、重点、概念解释、字幕时间轴和画面描述。
+- `subtitles.srt`：原始字幕或语音转录，保留来源时间以便核对。
+- `metadata.json`：来源、模型、运算方式、画面 PTS、SHA256 与分析信息。
+- `translations/语言代码/`：在页面上生成的其他语言版本；原始摘要和 SRT 不会被改写。
+
+产出写入成功后，删除该任务的视频、音频和截图；失败任务的暂存保留 24 小时。项目暂存上限 5 GB，只清理带项目标记的任务目录，不删除模型或其他文件。
+
+语音识别和摘要都可能出错，尤其是人名、专有名词和音质较差的音频。名称修正必须有来源资料支持；摘要不能代替核对原视频。画面抽样不会覆盖整个视频。
+
+## Chrome 启动书签（可选）
+
+1. 完成首次配置后（便携版首次启动，或源码版 `setup.bat`），双击 `install-bookmark.bat`，为当前 Windows 用户注册连接。
+2. 在 Chrome 书签管理器新增书签，网址填 `videosummarizer://open`。
+3. 点书签时确认打开外部应用。启动器是 Python，提示中可能显示 Python。
+
+服务已运行时直接打开网页，未运行时在后台启动并等待就绪。冷启动可能需要约两分钟，进度记录在 `logs/bookmark.log` 和 `logs/startup.log`。Chrome 不接受协议书签时，可以收藏项目里的 `bookmark.html` 再点其中的按钮。
+
+书签不是开机自启；关闭网页不会停止后台服务。要移除注册，运行 `remove-bookmark.bat`，模型和摘要保留。启动器使用系统默认浏览器。
+
+## 常见问题
+
+### Whisper 下载超时 / WinError 10060 / LocalEntryNotFoundError
+
+这表示无法下载语音模型，且本机没有完整模型；不是 CUDA 计算失败，改用 CPU 也无法解决。网页能打开不代表所有模型都已下载。有字幕的视频仍可处理。
+
+1. 网络无法连接 Hugging Face 时，最简单的方法是改用内含 Whisper 的安装包。
+2. 确认能打开 [官方 small 模型页面](https://huggingface.co/Systran/faster-whisper-small)，然后在软件文件夹双击 `prepare-whisper.bat` 并同意下载。失败原因记录在 `logs/whisper-download.log`，已下载的部分保留以便重试。
+3. 这台电脑无法联网时，可以在能下载的电脑完成第 2 步，关闭程序后把**整个 `models/whisper` 文件夹**复制到这台电脑软件文件夹的同一位置。源缓存使用符号链接时，请复制实际文件内容。
+4. 也可以从官方模型页面下载 `model.bin`、`config.json`、`tokenizer.json`、`vocabulary.txt`（或 `vocabulary.json`），放到 `models/whisper/small/`；上游有 `preprocessor_config.json` 时一并复制。必须是 faster-whisper 的 CTranslate2 模型，OpenAI 原始 `.pt` 文件不能直接使用。
+5. 再运行 `prepare-whisper.bat`。本机文件完整时直接通过检查，不联网下载；页面的「Whisper 语音模型状态」也会显示是否就绪。
+
+### 其他问题
+
+- **第一次启动没有反应**：留意浏览器的「打开外部应用 / Python」提示；Ollama 初始化期间查看 `logs/startup.log`。
+- **端口已被占用**：确认是否还有本项目的其他文件夹或其他程序在运行。未知的 Ollama 服务会被拒绝使用，程序不会结束其他程序的进程。
+- **CUDA 失败**：转录会自动回退 CPU。需要诊断信息时，在软件文件夹运行 `runtime\python.exe diagnostics.py`（便携版）或 `.venv\Scripts\python.exe diagnostics.py`（源码版），结果也保存在 `logs/diagnostics.json`。提交问题前删除私人资料和本机路径。
+- **平台下载失败**：平台规则会变化；yt-dlp 固定为已测试的 nightly 版本。遇到登录、付费、验证或其他限制时，工具会停止，不会绕过。
+- **升级后仍是旧版本**：见上方「升级」，先关闭旧版服务再从新文件夹启动。
+
+## 开发与贡献
+
+```powershell
+py -3.11 -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+测试不需要下载 AI 模型。安装和实际推理需要另外验证，请参考 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
+## 使用范围与隐私
+
+只处理你有权合法访问的内容。不读取浏览器 cookies，不使用账号密码，不绕过 DRM、付费、登录、验证或地区限制。下载器只接受 HTTPS 的 Bilibili / b23.tv / YouTube 链接。
+
+Ollama cloud 已禁用；字幕和画面只发送到项目自己的本机 Ollama。视频平台、GitHub、PyPI、Node.js、Ollama 模型库和 Hugging Face 仍会收到必要的下载请求。程序和模型的首次下载都需要你同意。
+
+项目代码使用 [MIT](LICENSE) 许可。第三方程序、套件和模型保留各自的许可，详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。源码 ZIP 不含第三方二进制文件或模型权重；Windows 便携包另含 CPython 及其上游许可，内含 Whisper / Ollama 的版本另含对应的模型或程序及其许可，均不含下载的视频。
+
+## 历史版本说明
+
+以下是各版本发布时的说明，原文保留作为记录，只适用于当时的版本。其中「自动安装 CUDA」「下载 source.zip 覆盖旧目录」等做法已不再适用；当前步骤以上方说明为准。
+
+### v0.3.3：页面显示当前运行版本
 
 建议下载 [v0.3.3 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.3/VideoSummarizer-v0.3.3-windows-x64-with-whisper-ollama.zip)，完整解压到新的可写入文件夹。停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。
 
@@ -20,9 +145,7 @@ v0.3.4 是维护版本，程序功能与 v0.3.3 相同。内含 Whisper 的两�
 
 保留 v0.3.2 的 CPU int8 默认设置、首次配置跳过 CUDA 和独立 `install-gpu.bat`。内含 Python、Whisper small 和完整官方 Ollama；其余 Python 依赖、Node.js 与 Qwen 摘要模型仍需首次同意后联网下载。本包不是完全离线包。原有模型与产出可自行复制完整的 `models` 和 `outputs` 文件夹；不要复制旧版就绪标记、日志、补丁或 `PORTABLE_BUILD.json`。
 
-以下保留此前版本的说明。
-
-## v0.3.2：首次配置不再等待 CUDA 下载
+### v0.3.2：首次配置不再等待 CUDA 下载
 
 建议下载 [v0.3.2 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.2/VideoSummarizer-v0.3.2-windows-x64-with-whisper-ollama.zip)。完整解压到新的可写入文件夹，停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。不需要预装 Python，也不需要 v0.3.1 的临时启动补丁。
 
@@ -34,9 +157,7 @@ v0.3.4 是维护版本，程序功能与 v0.3.3 相同。内含 Whisper 的两�
 
 保留简体中文默认设置，以及页面和摘要独立切换简体中文、繁體中文和 English 的功能。升级使用新文件夹，不覆盖旧版；模型和历史产出可自行复制完整的 `models` 与 `outputs` 文件夹。不要复制旧版 `portable-ready.json`、补丁文件或 `skip-cuda-install.flag`。
 
-以下内容是历史版本说明；其中自动安装 CUDA 的描述仅适用于旧版。
-
-## v0.3.1：内置 Ollama 的 Windows 下载
+### v0.3.1：内置 Ollama 的 Windows 下载
 
 建议下载 [v0.3.1 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.1/VideoSummarizer-v0.3.1-windows-x64-with-whisper-ollama.zip)。包含 Python、Whisper small 和完整官方 Ollama 0.40.2 Windows x64 程序及运行库；首次配置直接使用包内 Ollama，解决安装时下载 Ollama ZIP 连接中断的问题。解压到新文件夹，停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。请至少预留 15 GB 空间，保留 `tools/ollama` 下全部文件。
 
@@ -46,9 +167,7 @@ v0.3.4 是维护版本，程序功能与 v0.3.3 相同。内含 Whisper 的两�
 
 内置 Ollama 原版 ZIP 固定 SHA256 `e29ad1d5063dd4b54b2492d9b00adab2cff9621bfa654b6c92aa8d6f1fdfe7fc`，与官方发布清单一致；保留原始运行库、组件许可和额外 Ollama MIT 许可。包内 `OLLAMA_BUNDLE.json` 记录来源、版本和逐文件哈希，发布页提供 `WITH_WHISPER_OLLAMA_SHA256SUMS.txt`。
 
-以下 v0.3.0 / v0.2.1 内容保留为此前版本及其他发行包说明。
-
-Windows 免费本机视频摘要工具：Bilibili / b23.tv / YouTube、字幕优先、可选画面分析。
+### v0.3.0：默认简体中文，页面和摘要三语切换
 
 **v0.3.0：默认简体中文，页面和摘要支持「简体中文 / 繁體中文 / English」分别选择。** 页面立即切换，输入链接、模型和 CPU/GPU 设置会保留；语言偏好保存在软件文件夹的 `language-settings.json`。摘要默认跟随页面，也可单独指定。页面切换不会自动调用模型或改写已有摘要。
 
@@ -58,13 +177,11 @@ Windows 免费本机视频摘要工具：Bilibili / b23.tv / YouTube、字幕优
 
 升级请解压到新的可写入文件夹，不覆盖旧版；正常关闭旧版服务或重启 Windows 后再启动新版，避免共用端口冲突。可自行复制旧版 `outputs` 与完整的 `models` 文件夹。不会自动改写旧摘要或迁移系统设置。
 
-## v0.2.1 及更早版本使用说明（历史）
+### v0.2.1 及更早版本（原文为繁体中文）
 
 **v0.2.1 提供 Windows x64 便攜版，內置 Python 3.11.17，無需預先安裝 Python。** 解壓後雙擊 `VideoSummarizer.exe`。首次使用仍需同意自動下載影片/語音依賴、Ollama、Node.js 和模型；完成後直接啟動本機網頁。沒有付費 API，不使用 Ollama cloud。
 
-## 下載與安裝
-
-### 一般使用者：免預裝 Python 的 Windows 便攜版
+#### 一般使用者：免預裝 Python 的 Windows 便攜版
 
 **無法連線 Hugging Face 的使用者可直接下載 [v0.2.1 內含 Whisper 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.2.1/VideoSummarizer-v0.2.1-windows-x64-with-whisper.zip)**（約 500 MB）。這是一個新資料夾使用的完整 Windows 安裝包：包含相同的 Python / EXE 和已驗證的 small 語音模型，解壓後雙擊 `VideoSummarizer.exe`，不用覆盖舊版或另行搬移語音模型。首次仍需同意自動下載其他依賴、Ollama 和摘要模型，這不是全部依賴預裝的完全離線包。若舊版仍在背景運行，先停止舊版專案服務或重啟 Windows，再開啟新資料夾；兩份不能同時占用相同服務埠。
 
@@ -81,7 +198,7 @@ Windows 免费本机视频摘要工具：Bilibili / b23.tv / YouTube、字幕优
 
 便攜版自動測試在解壓的發布 ZIP 中，直接以 EXE 啟動內置 Python，並移除 PATH 中的 Python 位置；檢查首次配置判斷、依賴安裝、單元測試、FFmpeg、Whisper 匯入、網頁載入及實際 HTTP 健康端點。此測試不下載模型、不驗證所有 GPU，也未自動操作桌面進度視窗。
 
-### 開發者：原始碼版（仍需 Python）
+#### 開發者：原始碼版（仍需 Python）
 
 1. 從 [Releases](https://github.com/leto0309/VideoSummarizer/releases) 下載原始碼 ZIP，解壓到你有寫入權限的本機資料夾，例如 `D:\VideoSummarizer`。首次發布前也可使用 GitHub 的 Code → Download ZIP。
 2. 從 [Python 官方網站](https://www.python.org/downloads/windows/) 安裝 **Python 3.11、Windows 64 位**。保留 Python Launcher，或讓 `python` 指令指向 Python 3.11。
@@ -93,78 +210,6 @@ Windows 免费本机视频摘要工具：Bilibili / b23.tv / YouTube、字幕优
 
 首版固定 Ollama 0.40.2、Node.js 24.19.0 和 requirements.txt 的直接依賴版本；官方 ZIP 下載會驗證 SHA256。傳遞依賴與模型標籤由上游提供，未宣稱整個安裝環境逐位元可重現。
 
-## 環境與模型
-
-- 目標：Windows 10 22H2 / Windows 11，x64，Python 3.11；便攜版內置此環境，源碼版需自行安裝。其他系統未驗證。
-- 建議 RAM 16 GB；磁碟建議至少預留 15 GB（依模型及依賴而變動）。這是建議配置，不是已驗證的最低需求。
-- NVIDIA GPU 相容時 Whisper 使用 CUDA `int8_float16`；否則 CPU `int8`，CPU 處理長影片可能很慢。
-- Whisper 預設 `small`，從官方 Hugging Face 倉庫下載到專案模型目錄（約 464 MiB）。完整本機模型優先使用，轉錄時不再檢查線上版本。
-- Ollama 預設 `qwen3-vl:4b-instruct`；未偵測 NVIDIA GPU，或 VRAM 小於 6 GiB 時選擇 `qwen3-vl:2b-instruct`。CPU / 部分 GPU 推論速度取決於硬體。
-- 上下文 4096 tokens；長字幕分段再合併。Whisper 和 Ollama 序列處理，跨頁面只允許一個摘要任務。
-- 專案 Ollama 使用 `127.0.0.1:11435`，網頁使用 `127.0.0.1:8501`。這些是本機端點，不對外公開。
-
-目前完整影片流程曾在一台 Windows / RTX 3050 Laptop 4 GB VRAM / 16 GB RAM 裝置驗證，包括字幕、CUDA / CPU 轉錄與畫面時間戳。這不代表所有裝置或每支平台影片都可用。GitHub 自動测试驗證程式邏輯，不執行模型推論或平台下載。
-
-## 摘要與清理
-
-先讀人工字幕，其次自動字幕；確實無字幕才下載音訊轉錄。可選下載低解析度影片，使用 FFmpeg 取得約 8 張均勻取樣畫面，時間取自實際解碼影格的 PTS。
-
-成功產出保留在 `outputs/日期時間_任務ID/`：
-
-- `summary.md`：影片資料、摘要、重點、概念解釋、字幕時間軸及畫面描述。
-- `subtitles.srt`：原字幕或語音轉錄，保留來源时间以供核對。
-- `metadata.json`：來源、模型、運算方式、實際畫面 PTS 及分析資訊。
-
-成功寫入产出後，清理該任務影片、音訊與截圖；失敗暫存保留 24 小時。專案暫存上限 5 GB，只清理带專案標記的任務目錄，不刪模型或使用者其他檔案。
-
-語音辨識和摘要都可能出錯，尤其是人名、專有名詞與低品質音訊。名稱修正必須有來源資料支持；摘要不能取代原影片核對。畫面抽樣不涵蓋整支影片。
-
-## Chrome 啟動書籤（選用）
-
-1. 完成 setup.bat 後，雙擊 `install-bookmark.bat`，註冊目前使用者的自訂連結。
-2. 在 Chrome 書籤管理員新增書籤，網址填 `videosummarizer://open`。
-3. 點書籤並確認開啟外部應用。因啟動器是 Python，提示可能顯示 Python。
-
-服務已運行就直接開啟，未運行則背景啟動並等待就緒。冷啟動可能需要約兩分鐘；進度記錄於 `logs/bookmark.log` 和 `logs/startup.log`。Chrome 不接受直接協議書籤時，可收藏專案內的 `bookmark.html` 並點按鈕。
-
-書籤模式沒有開機自啟；關閉網頁不會停止背景服務。要移除連結註冊，執行 `remove-bookmark.bat`；模型與摘要保留。啟動器採用系統預設瀏覽器，不包含發布者的 Chrome 路徑或個人設定。
-
-## 常見問題
-
-### Whisper 下載逾時 / WinError 10060 / LocalEntryNotFoundError
-
-這表示無法取得語音模型且本機沒有完整快取；不是 CUDA 計算失敗。改用 CPU 不會修復網路。網頁能開啟不代表所有 AI 模型均已下載。
-
-1. 確認能開啟 [官方 small 模型頁面](https://huggingface.co/Systran/faster-whisper-small)。首次下載模型需要網路，推論本身在本機執行。
-2. 在軟體資料夾雙擊 `prepare-whisper.bat`，同意下載後等待完成。使用內置 Python，不需安裝系統 Python。失敗原因記錄於 `logs/whisper-download.log`，部分下載檔案保留供重試。
-3. 若該電腦無法連線，可在能下載的電腦完成這一步，關閉下載程式後，將**整個 `models/whisper` 資料夾**複製到另一台軟體資料夾下的同名位置。若來源快取使用符號連結，請複製實際檔案內容，避免斷鏈。
-4. 也可從官方模型頁面下載同一版本的 `model.bin`、`config.json`、`tokenizer.json`、`vocabulary.txt`（或 `vocabulary.json`），放到 `models/whisper/small/`；若上游提供 `preprocessor_config.json`，一併複製。請使用 faster-whisper 的 CTranslate2 模型，OpenAI 原始 `.pt` 檔不能直接使用。
-5. 再執行 `prepare-whisper.bat`。本機完整檔案會直接通過檢查，不連線下載。網頁也顯示模型檔案是否就緒；實際權重是否有效仍由推論時的原生模型載入驗證。
+#### v0.2.0 升級到 v0.2.1（僅適用於當時版本）
 
 v0.2.0 使用者可下載 v0.2.1 **source.zip**，將其中 `VideoSummarizer` 資料夾內的程式檔覆蓋到既有軟體目錄。便攜版保留原有 `VideoSummarizer.exe`、`runtime`、`tools`、`models`、`outputs` 與 `portable-ready.json`，不需要重裝 Python 或 Ollama。完成後執行 `prepare-whisper.bat`；關閉原來的網頁並重新開啟以載入新版。自訂修改過的原始碼請先備份。修正網路錯誤提示不能保證 Hugging Face 在每個網路環境都可連線。
-
-### 其他問題
-
-- **第一次啟動沒有反應**：先確認瀏覽器的「開啟 Python」提示；Ollama 初始化期間查看 `logs/startup.log`。Streamlit 郵箱提示已明確關閉。
-- **端口已使用**：確認是否仍有此專案或其他服務運行。未知 Ollama 服务會被拒絕，不會自動結束他人的程序。
-- **CUDA 失敗**：工具嘗試回退 CPU。用 `.venv\Scripts\python.exe diagnostics.py` 收集本機診斷；提交問題前刪掉私密資料及本機路徑。
-- **平台下載失敗**：平台規則會變動；yt-dlp 固定為已測試 nightly 版本。若遇登入、付費、驗證或其他限制，工具停止，不繞過。
-- **更新**：把新版本解壓至新資料夾並重新 setup，或保留原目錄的 models / outputs 後按文檔升級。不要把其他電腦的 `.venv` 直接複製過來。
-
-## 開發與貢獻
-
-```powershell
-py -3.11 -m venv .venv
-.venv\Scripts\python.exe -m pip install -r requirements.txt
-.venv\Scripts\python.exe -m unittest discover -s tests -v
-```
-
-測試不需要下载 AI 模型。安裝和實際推論是另一項驗證，請參考 [CONTRIBUTING.md](CONTRIBUTING.md)。
-
-## 使用範圍與隱私
-
-僅處理你有權合法存取的內容。不讀取瀏覽器 cookies，不使用帳密，不繞過 DRM、付費、登入、驗證或區域限制。下載器只允許 HTTPS Bilibili / b23.tv / YouTube 連結。
-
-Ollama cloud 已禁用；字幕和畫面只送至專案的本機 Ollama。原始平台、GitHub、PyPI、Node.js、Ollama 模型庫與 Hugging Face 仍會收到必要下載請求。執行檔和模型首次下載需使用者同意。
-
-專案代码採 [MIT](LICENSE)。第三方程式、套件與模型保留自己的授權，詳見 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。源碼 ZIP 不含第三方二進位或模型權重；Windows 便攜 ZIP 另含 CPython 及其上游授權，不含 AI 模型或下載影片。
