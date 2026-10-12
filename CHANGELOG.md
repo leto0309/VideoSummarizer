@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.4 — 2026-10-11
+## 0.3.4 — 2026-10-12
 
 Maintenance release; the application behaves the same as 0.3.3. The with-Whisper and with-Whisper + Ollama editions now record the SHA256 of the verified standard portable ZIP as `base_sha256` in `WHISPER_BUNDLE.json`. Version 0.3.3 and earlier recorded the `vocabulary.txt` hash there by mistake. The base ZIP and every Whisper file were already checksum-verified, so only this provenance field was wrong.
 
