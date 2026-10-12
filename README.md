@@ -1,5 +1,15 @@
 # VideoSummarizer
 
+## v0.3.4：修正内含 Whisper 安装包的来源记录
+
+建议下载 [v0.3.4 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.4/VideoSummarizer-v0.3.4-windows-x64-with-whisper-ollama.zip)，完整解压到新的可写入文件夹。停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。页面标题下会显示 `VideoSummarizer · 当前运行版本：v0.3.4`。
+
+v0.3.4 是维护版本，程序功能与 v0.3.3 相同。内含 Whisper 的两种安装包中，`WHISPER_BUNDLE.json` 的 `base_sha256` 现在记录实际使用的标准便携包 SHA256；v0.3.3 及更早版本误记为 `vocabulary.txt` 的哈希。标准便携包和 Whisper 模型文件一直逐一校验，这个错误只影响来源记录，不影响运行。v0.3.3 运行正常的用户不必为此升级。
+
+保留 v0.3.2 起的 CPU int8 默认设置、首次配置跳过 CUDA 和独立 `install-gpu.bat`。内含 Whisper + Ollama 版仍需首次同意后联网下载其他 Python 依赖、Node.js 与 Qwen 摘要模型，不是完全离线包。升级方法与 v0.3.3 相同：使用新文件夹，可复制完整的 `models` 和 `outputs`，不要复制旧版就绪标记、日志、补丁或 `PORTABLE_BUILD.json`。
+
+以下保留此前版本的说明。
+
 ## v0.3.3：页面显示当前运行版本
 
 建议下载 [v0.3.3 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.3/VideoSummarizer-v0.3.3-windows-x64-with-whisper-ollama.zip)，完整解压到新的可写入文件夹。停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。

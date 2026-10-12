@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.4 — 2026-10-12
+
+Maintenance release; the application behaves the same as 0.3.3. The with-Whisper and with-Whisper + Ollama editions now record the SHA256 of the verified standard portable ZIP as `base_sha256` in `WHISPER_BUNDLE.json`. Version 0.3.3 and earlier recorded the `vocabulary.txt` hash there by mistake. The base ZIP and every Whisper file were already checksum-verified, so only this provenance field was wrong.
+
+Remove the stale v0.2.1 defaults from the Whisper bundle builder: the release version comes from the application version, and the verified base SHA256 must be passed explicitly. Remove the obsolete manual v0.2.1 with-Whisper workflow; every release builds that edition in the Windows portable workflow. Add offline regression tests for the bundle metadata, builder arguments, workflow invocations and release documents.
+
 ## 0.3.3 — 2026-10-11
 
 Show the running VideoSummarizer version below the page title. A localized About section identifies the source / standard Windows / Whisper / Whisper + Ollama package edition and links to that version's release notes. Simplified Chinese, Traditional Chinese and English labels follow the page-language selector. Reading version information is entirely local and does not download models or check for updates.
