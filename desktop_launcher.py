@@ -39,12 +39,31 @@ def needs_setup():
         return True
 
 
+def needed_sources():
+    """Download sites the coming first-run setup will contact, for the network summary."""
+    needed = ['pypi'] if not dependencies_ready() else []
+    if not (ROOT / 'tools/node/node.exe').is_file():
+        needed.append('node')
+    if not (ROOT / 'tools/ollama/ollama.exe').is_file():
+        needed.append('github')
+    if not (ROOT / 'models/ollama/manifests/registry.ollama.ai/library/qwen3-vl').is_dir():
+        needed.append('ollama')
+    if not (ROOT / 'models/whisper/small/model.bin').is_file():
+        needed.append('huggingface')
+    return needed
+
+
 def prepare():
     print('首次配置：正在安裝影片與 AI 依賴，可能需要數 GB 下載與空間。', flush=True)
     if not dependencies_ready():
         from install_support import install_requirements
-        install_requirements(ROOT / 'requirements.txt', root=ROOT,
-                             progress=lambda message: print(message, flush=True))
+        from network_check import explain
+        try:
+            install_requirements(ROOT / 'requirements.txt', root=ROOT,
+                                 progress=lambda message: print(message, flush=True))
+        except (subprocess.CalledProcessError, TimeoutError, OSError) as exc:
+            explain(exc, 'pypi')
+            raise
     from setup_runtime import setup
     setup()
     READY.write_text(json.dumps({'version': 1}), encoding='utf-8')
@@ -114,6 +133,8 @@ def main():
         from startup_lock import StartupMutex
         with StartupMutex():
             if needs_setup():
+                from network_check import check
+                check(needed=needed_sources())
                 prepare()
     if needs_setup():
         raise RuntimeError('需要首次配置，請重新開啟 VideoSummarizer.exe 並同意下載。')
@@ -136,6 +157,10 @@ if __name__ == '__main__':
         install_temp.mkdir(parents=True, exist_ok=True)
         os.environ['TEMP'] = os.environ['TMP'] = str(install_temp)
         main()
-    except Exception:
+    except Exception as exc:
+        # The traceback ends with the source-specific advice; then re-check that one site.
         traceback.print_exc()
+        if getattr(exc, 'download_source', None):
+            from network_check import check
+            check([exc.download_source])
         sys.exit(1)

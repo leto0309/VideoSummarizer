@@ -20,7 +20,7 @@ class OllamaBundleTests(unittest.TestCase):
             executable.write_bytes(b'verified official executable fixture')
             with patch.object(setup_runtime, 'ROOT', root), patch.object(setup_runtime, 'TOOLS', tools), \
                  patch.object(setup_runtime, 'setup_node'), \
-                 patch.object(setup_runtime.requests, 'get', side_effect=AssertionError('Ollama network forbidden')) as get, \
+                 patch('requests.sessions.Session.request', side_effect=AssertionError('Ollama network forbidden')) as get, \
                  patch.object(setup_runtime.subprocess, 'run') as pip, \
                  patch('launcher.pull') as pull, patch('whisper_models.ensure_model') as whisper:
                 pip.return_value.returncode = 0
