@@ -1,0 +1,3 @@
+# False positive: the pinned SHA256 of the public Whisper small tokenizer.json
+# (Systran/faster-whisper-small), matched by generic-api-key because the key name contains "token".
+433c3e914e55646ff6eb95392f1690af58d3068e:scripts/build_model_bundle.py:generic-api-key:19

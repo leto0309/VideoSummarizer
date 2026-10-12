@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.5 — 2026-10-12
+
+First-time setup checks the download sites before it starts: PyPI, nodejs.org, GitHub, the Ollama model registry and Hugging Face. The progress window lists which sites answer and which ones this setup needs, and `check-network.bat` runs the same check at any time, saving `logs/network-check.json`. The check sends HEAD requests only and uploads nothing. When a dependency, Node.js, Ollama program or model download fails, the error ends with the site involved, what it provides and what to try, and that site is checked again.
+
+Node.js and Ollama program downloads retry and resume from the partial file, and are installed only after the official SHA256 matches. Setup no longer downloads a Qwen model that is already present, so a copied `models/ollama` folder works without the model registry. The README now separates current instructions from historical release notes. These changes were not tested on mainland China networks; a reachable site does not guarantee that large downloads complete.
+
 ## 0.3.4 — 2026-10-12
 
 Maintenance release; the application behaves the same as 0.3.3. The with-Whisper and with-Whisper + Ollama editions now record the SHA256 of the verified standard portable ZIP as `base_sha256` in `WHISPER_BUNDLE.json`. Version 0.3.3 and earlier recorded the `vocabulary.txt` hash there by mistake. The base ZIP and every Whisper file were already checksum-verified, so only this provenance field was wrong.
