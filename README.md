@@ -24,7 +24,7 @@ v0.3.4 是维护版本，程序功能与 v0.3.3 相同。内含 Whisper 的两�
 | `windows-x64-with-whisper.zip` | 500 MB | Python、Whisper small 语音模型 |
 | `windows-x64.zip` | 49 MB | Python |
 
-三种都不是完全离线包。首次启动时会询问是否同意下载其余 Python 依赖（含 FFmpeg）、Node.js、包内没有的 Ollama 程序或 Whisper 模型，以及 Qwen 摘要模型，合计可能数 GB；请至少预留 15 GB 磁盘空间。
+三种都不是完全离线包。首次启动时会询问是否同意下载其余 Python 依赖（含 FFmpeg）、Node.js、包内没有的 Ollama 程序或 Whisper 模型，以及 Qwen 摘要模型，合计可能数 GB；请至少预留 15 GB 磁盘空间。开始下载前，进度窗口会先列出各下载网站能否连接；网络不稳定时，可先双击 `check-network.bat` 检查。
 
 1. 下载 ZIP；需要时用发布页的 `*_SHA256SUMS.txt` 核对 SHA256。完整解压到有写入权限的新文件夹，不要直接在 ZIP 里运行。
 2. 双击 `VideoSummarizer.exe`，同意后在进度窗口自动配置。Python 依赖安装显示进度，设 45 分钟整体时限，可点「取消配置」；取消或失败会保留已有模型和摘要，重新打开即可重试。
@@ -94,6 +94,26 @@ v0.3.4 是维护版本，程序功能与 v0.3.3 相同。内含 Whisper 的两�
 书签不是开机自启；关闭网页不会停止后台服务。要移除注册，运行 `remove-bookmark.bat`，模型和摘要保留。启动器使用系统默认浏览器。
 
 ## 常见问题
+
+### 首次配置下载失败 / 检查网络
+
+首次配置需要从几个不同的网站下载，任何一个连不上都会让配置停下：
+
+| 网站 | 下载内容 | 已内含在哪些安装包 |
+|---|---|---|
+| PyPI（pypi.org、files.pythonhosted.org） | Python 依赖（含 FFmpeg）、可选 CUDA 运行库 | 无 |
+| Node.js 官网（nodejs.org） | Node.js | 无 |
+| GitHub | Ollama 程序 | 内含 Whisper + Ollama 版 |
+| Ollama 模型库（registry.ollama.ai） | Qwen 摘要模型 | 无 |
+| Hugging Face | Whisper 语音模型 | 两种内含 Whisper 版 |
+
+1. 双击软件文件夹里的 `check-network.bat`，它会逐个测试这些网站能否连接，结果保存在 `logs/network-check.json`。只发送连接测试请求，不上传任何资料，首次配置前也能运行。便携版首次配置开始时也会自动显示同样的检查，并标出这次配置需要哪些网站。
+2. 配置失败时，进度窗口最后会说明是哪个网站、影响什么，以及可以怎么做，并再检查一次该网站能否连接。完整记录保存在 `logs/desktop.log` 和 `logs/install.log`。
+3. 重新打开 `VideoSummarizer.exe` 即可重试：Python 依赖会复用 `tools/pip-cache`，Node.js 和 Ollama 程序会接着已下载的部分继续，Qwen 模型由 Ollama 自行续传。
+4. 连不上 GitHub 时，改用内含 Whisper + Ollama 版；连不上 Hugging Face 时，改用内含 Whisper 的安装包。
+5. 连不上 Ollama 模型库时，可以在能下载的电脑完成配置，再把整个 `models/ollama` 文件夹复制到这台电脑软件文件夹的同一位置；首次配置发现本机已有模型时会跳过下载。
+
+「可以连接」只表示能建立连接，不保证大文件一定能完整下载。
 
 ### Whisper 下载超时 / WinError 10060 / LocalEntryNotFoundError
 

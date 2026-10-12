@@ -37,5 +37,6 @@ pause
 exit /b 1
 :failed
 echo Setup stopped. Existing outputs and models are preserved. Read the error above.
+echo Run check-network.bat to see which download sites can be reached.
 pause
 exit /b 1

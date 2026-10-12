@@ -97,6 +97,14 @@ def pull(model=None):
     if model not in ALLOWED_MODELS:
         raise ValueError('只能下載核准的本機模型')
     ensure_server()
+    # A model copied from another computer must not need the model registry again.
+    session = requests.Session()
+    session.trust_env = False
+    response = session.get(OLLAMA_URL + '/api/tags', timeout=10)
+    response.raise_for_status()
+    if model in [item.get('name') for item in response.json().get('models', [])]:
+        print(f'已找到本机摘要模型 {model}，跳过下载。', flush=True)
+        return
     subprocess.run([str(TOOLS / 'ollama' / 'ollama.exe'), 'pull', model],
                    env=server_env(), check=True)
 

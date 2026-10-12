@@ -1,4 +1,5 @@
 """Visible, bounded project-local installers. No system PATH or global installs."""
+import hashlib
 import os
 from pathlib import Path
 import queue
@@ -98,3 +99,67 @@ def install_requirements(requirements, *, timeout=2700, root=None, progress=prin
     code = run_installer(command, timeout=timeout, root=root, progress=progress)
     if code:
         raise subprocess.CalledProcessError(code, command)
+
+
+def fetch(url, *, attempts=3, timeout=30, session=None, sleep=time.sleep, progress=print):
+    """Small metadata request (checksum list, release information) with bounded retries."""
+    import requests
+    session = session or requests.Session()
+    for attempt in range(1, attempts + 1):
+        try:
+            response = session.get(url, timeout=timeout)
+            response.raise_for_status()
+            return response
+        except requests.RequestException:
+            if attempt == attempts:
+                raise
+            progress(f'连接失败，{5 * attempt} 秒后重试（第 {attempt + 1}/{attempts} 次）：{url}')
+            sleep(5 * attempt)
+
+
+def download_file(url, target, *, sha256, size=None, attempts=4, session=None, sleep=time.sleep, progress=print):
+    """Resume a project-owned .part file across attempts; publish only after the SHA256 matches."""
+    import requests
+    session = session or requests.Session()
+    target = Path(target)
+    partial = target.with_name(target.name + '.part')
+    for attempt in range(1, attempts + 1):
+        start = partial.stat().st_size if partial.is_file() else 0
+        if size is not None and start >= size:
+            break
+        try:
+            headers = {'Range': f'bytes={start}-'} if start else {}
+            with session.get(url, stream=True, timeout=(30, 120), headers=headers) as response:
+                if start and response.status_code == 416:
+                    break  # Already complete from an earlier attempt; the checksum decides.
+                if start and response.status_code == 206 and response.headers.get(
+                        'Content-Range', '').startswith(f'bytes {start}-'):
+                    mode = 'ab'
+                else:
+                    # The server ignored the range: start again rather than append the whole file.
+                    response.raise_for_status()
+                    mode, start = 'wb', 0
+                with partial.open(mode) as handle:
+                    noticed = start
+                    for chunk in response.iter_content(1024**2):
+                        handle.write(chunk)
+                        if handle.tell() - noticed >= 50 * 1024**2:
+                            noticed = handle.tell()
+                            progress(f'已下载 {noticed / 1024**2:.0f} MiB：{target.name}')
+            break
+        except requests.RequestException:
+            if attempt == attempts:
+                raise
+            done = partial.stat().st_size if partial.is_file() else 0
+            progress(f'下载中断，{5 * attempt} 秒后从已下载的 {done / 1024**2:.1f} MiB 继续'
+                     f'（第 {attempt + 1}/{attempts} 次）：{target.name}')
+            sleep(5 * attempt)
+    digest = hashlib.sha256()
+    with partial.open('rb') as handle:
+        for chunk in iter(lambda: handle.read(1024**2), b''):
+            digest.update(chunk)
+    if digest.hexdigest() != sha256:
+        partial.unlink()
+        raise RuntimeError(f'{target.name} 的 SHA256 与官方记录不一致，已删除未完成的下载，请重试。')
+    partial.replace(target)
+    return target

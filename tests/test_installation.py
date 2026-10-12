@@ -20,7 +20,7 @@ class InstallationTests(unittest.TestCase):
             (tools / 'ollama/ollama.exe').touch()
             with patch.object(setup_runtime, 'ROOT', root), patch.object(setup_runtime, 'TOOLS', tools), \
                  patch.object(setup_runtime, 'setup_node'), \
-                 patch.object(setup_runtime.requests, 'get', side_effect=AssertionError('Bundled Ollama download forbidden')), \
+                 patch('requests.sessions.Session.request', side_effect=AssertionError('Bundled Ollama download forbidden')), \
                  patch.object(setup_runtime.subprocess, 'run', side_effect=AssertionError('CUDA pip forbidden')), \
                  patch('launcher.pull') as pull, patch('whisper_models.ensure_model') as whisper:
                 setup_runtime.setup()
