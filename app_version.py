@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 
-VERSION = '0.3.5'
+VERSION = '0.3.6'
 RELEASE_TAG = 'v' + VERSION
 RELEASE_URL = 'https://github.com/leto0309/VideoSummarizer/releases/tag/' + RELEASE_TAG
 EDITIONS = ('windows-x64', 'windows-x64-with-whisper', 'windows-x64-with-whisper-ollama')
