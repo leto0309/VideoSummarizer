@@ -1,0 +1,60 @@
+"""Update or restore the yt-dlp download component in this project's own Python."""
+import argparse
+import importlib.metadata
+import os
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent
+LOCK = ROOT / '.pipeline.lock'
+
+
+def pinned():
+    lines = (ROOT / 'requirements.txt').read_text(encoding='utf-8').splitlines()
+    return [line.strip() for line in lines if line.strip().startswith(('yt-dlp[', 'yt-dlp-ejs=='))]
+
+
+def installed():
+    try:
+        return importlib.metadata.version('yt-dlp')
+    except importlib.metadata.PackageNotFoundError:
+        return '未安装'
+
+
+def update(restore=False, progress=print):
+    """Newest nightly by default (the project tracks nightly); restore reinstalls the tested pins."""
+    from filelock import FileLock, Timeout
+    import install_support
+    from network_check import explain
+    command = [sys.executable, '-m', 'pip', 'install', '--only-binary=:all:', '--progress-bar', 'raw',
+               '--no-warn-script-location', '--disable-pip-version-check', '--timeout', '30', '--retries', '2',
+               '--cache-dir', str(ROOT / 'tools/pip-cache')]
+    command += pinned() if restore else ['--upgrade', '--pre', 'yt-dlp[default]']
+    try:
+        with FileLock(str(LOCK), timeout=0):
+            before = installed()
+            progress('恢复测试过的 yt-dlp 版本……' if restore else '从 PyPI 更新 yt-dlp 到最新版本……')
+            code = install_support.run_installer(command, timeout=600, root=ROOT, progress=progress)
+            if code:
+                error = subprocess.CalledProcessError(code, command)
+                explain(error, 'pypi')
+                raise error
+            progress(f'yt-dlp：{before} → {installed()}。正在运行的网页仍在使用旧版本，'
+                     '请重启电脑后再打开 VideoSummarizer，新版本才会生效。')
+    except Timeout as exc:
+        raise RuntimeError('摘要任务正在运行，请等待完成后再更新下载组件。') from exc
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--restore', action='store_true')
+    args = parser.parse_args()
+    os.environ['PYTHONIOENCODING'] = 'utf-8'
+    try:
+        update(args.restore, progress=lambda message: print(message, flush=True))
+    except Exception as exc:
+        print(f'未完成：{exc}', flush=True)
+        for note in getattr(exc, '__notes__', []):
+            print(note, flush=True)
+        sys.exit(1)

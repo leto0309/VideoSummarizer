@@ -95,6 +95,7 @@ class AppVersionTests(unittest.TestCase):
 
     def test_three_language_page_shows_version_and_about_without_network(self):
         with patch('config.gpu_info', return_value={'name': 'Test GPU', 'vram_mib': 4000, 'driver': None}), \
+             patch('gpu_setup.installed', return_value=False), \
              patch('whisper_models.cached_model', return_value=None), \
              patch('preferences.load', return_value={'ui_language': 'zh-CN', 'summary_language': 'follow'}), \
              patch('preferences.save'), \
@@ -115,6 +116,7 @@ class AppVersionTests(unittest.TestCase):
 
     def test_page_explains_mismatched_install_without_losing_inputs(self):
         with patch('config.gpu_info', return_value={'name': 'Test GPU', 'vram_mib': 4000, 'driver': None}), \
+             patch('gpu_setup.installed', return_value=False), \
              patch('whisper_models.cached_model', return_value=None), \
              patch('preferences.load', return_value={'ui_language': 'zh-CN', 'summary_language': 'follow'}), \
              patch('preferences.save'), \
