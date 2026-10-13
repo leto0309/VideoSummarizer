@@ -19,7 +19,7 @@ class LauncherTests(TestCase):
                  patch.object(launcher, 'owned_process', return_value=False), \
                  patch.object(launcher.subprocess, 'Popen') as spawn, \
                  patch.object(sys, 'argv', ['launcher.py', '--headless']):
-                with self.assertRaisesRegex(RuntimeError, '未知服務'):
+                with self.assertRaisesRegex(RuntimeError, '未知服务'):
                     launcher.main()
                 spawn.assert_not_called()
 

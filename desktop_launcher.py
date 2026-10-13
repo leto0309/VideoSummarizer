@@ -62,7 +62,7 @@ def needed_sources():
 
 
 def prepare():
-    print('首次配置：正在安裝影片與 AI 依賴，可能需要數 GB 下載與空間。', flush=True)
+    print('首次配置：正在安装视频与 AI 依赖，可能需要数 GB 下载与空间。', flush=True)
     if not dependencies_ready():
         from install_support import install_requirements
         from network_check import explain
@@ -145,15 +145,15 @@ def main():
                 check(needed=needed_sources())
                 prepare()
     if needs_setup():
-        raise RuntimeError('需要首次配置，請重新開啟 VideoSummarizer.exe 並同意下載。')
+        raise RuntimeError('需要首次配置，请重新打开 VideoSummarizer.exe 并同意下载。')
     from bookmark_launcher import StartupMutex, open_on_demand, launch_service, open_chrome
     import requests
     session = requests.Session()
     session.trust_env = False
     with StartupMutex():
-        print('正在啟動本機服務；初始化可能需要約兩分鐘。', flush=True)
+        print('正在启动本机服务；初始化可能需要约两分钟。', flush=True)
         open_on_demand(session, launch_service, open_chrome)
-    print('網頁已開啟。關閉進度視窗不會停止背景服務。', flush=True)
+    print('网页已打开。关闭进度窗口不会停止背景服务。', flush=True)
 
 
 if __name__ == '__main__':

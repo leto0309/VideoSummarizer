@@ -8,10 +8,10 @@ def verified_terms(meta):
     terms = []
     if re.search(r'\byoinks\b', evidence, re.I):
         terms.append({'canonical': 'Yoinks', 'aliases': ['YawInx', 'Yoyngs'],
-                      'source': '影片標題及已確認的專案名稱'})
+                      'source': '视频标题及已确认的项目名称'})
     if re.search(r'\byt-dlp\b', evidence, re.I):
         terms.append({'canonical': 'yt-dlp', 'aliases': ['YT-Dub'],
-                      'source': '影片標題、描述或已分析畫面中的 yt-dlp 字樣'})
+                      'source': '视频标题、描述或已分析画面中的 yt-dlp 字样'})
     return terms
 
 

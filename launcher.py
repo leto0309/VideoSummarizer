@@ -57,12 +57,12 @@ def ensure_server(progress=lambda message: None):
     if running:
         owner = json.loads(ownerfile.read_text()) if ownerfile.is_file() else {}
         if owner.get('root') != str(ROOT) or not owned_process(owner.get('pid', 0), TOOLS / 'ollama' / 'ollama.exe'):
-            raise RuntimeError('11435 埠已有其他服務，請先釋放此埠；不使用未知 Ollama 服務。')
+            raise RuntimeError('11435 端口已有其他服务，请先释放此端口；不使用未知 Ollama 服务。')
         progress('Ollama 已在运行，已确认属于本项目。')
         return
     executable = TOOLS / 'ollama' / 'ollama.exe'
     if not executable.is_file():
-        raise RuntimeError('缺少可攜式 Ollama，請執行 setup.bat')
+        raise RuntimeError('缺少便携式 Ollama，请运行 setup.bat')
     progress('正在启动本机 Ollama；GPU 初始化可能需要约 1–2 分钟，请保持窗口开启。')
     profile = TOOLS / 'profile' / '.ollama'
     profile.mkdir(parents=True, exist_ok=True)
@@ -76,7 +76,7 @@ def ensure_server(progress=lambda message: None):
     last_notice = started
     for _ in range(120):
         if process.poll() is not None:
-            raise RuntimeError('Ollama 啟動失敗，請檢查 logs/ollama.log')
+            raise RuntimeError('Ollama 启动失败，请检查 logs/ollama.log')
         try:
             response = session.get(OLLAMA_URL + '/api/version', timeout=2)
             if response.ok:
@@ -88,14 +88,14 @@ def ensure_server(progress=lambda message: None):
             progress(f'仍在等待 Ollama 初始化，已等待 {time.monotonic()-started:.0f} 秒。')
             last_notice = time.monotonic()
         time.sleep(.5)
-    raise RuntimeError('Ollama 啟動逾時')
+    raise RuntimeError('Ollama 启动超时')
 
 
 def pull(model=None):
     from config import ALLOWED_MODELS
     model = model or default_model()
     if model not in ALLOWED_MODELS:
-        raise ValueError('只能下載核准的本機模型')
+        raise ValueError('只能下载核准的本机模型')
     ensure_server()
     # A model copied from another computer must not need the model registry again.
     session = requests.Session()
@@ -141,7 +141,7 @@ def main():
             response = session.get('http://127.0.0.1:8501/_stcore/health', timeout=3)
             if response.ok:
                 if not owned_process(pid, sys.executable):
-                    raise RuntimeError('8501 埠已有未知服務；不開啟、不停止其他服務。')
+                    raise RuntimeError('8501 端口已有未知服务；不打开、不停止其他服务。')
                 if not args.headless:
                     import webbrowser
                     webbrowser.open('http://127.0.0.1:8501')
