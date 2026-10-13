@@ -1,4 +1,3 @@
-import copy
 import json
 from pathlib import Path
 import tempfile
@@ -6,7 +5,7 @@ import unittest
 from unittest.mock import patch
 from streamlit.testing.v1 import AppTest
 from config import ALLOWED_MODELS
-from i18n import LANGUAGES, TEXT, normalize, tr
+from i18n import LANGUAGES, TEXT, tr
 from local_llm import LocalLLM
 from pipeline import render_report
 import preferences

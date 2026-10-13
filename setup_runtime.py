@@ -4,7 +4,7 @@ import subprocess
 import sys
 import traceback
 import zipfile
-from config import ROOT, TOOLS, node_runtime
+from config import ROOT, TOOLS
 from install_support import download_file, fetch
 from network_check import explain
 
