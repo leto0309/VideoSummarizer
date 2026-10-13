@@ -1,5 +1,4 @@
 """Install a current-user protocol handler; never overwrite a different app."""
-import json
 from pathlib import Path
 import subprocess
 import sys

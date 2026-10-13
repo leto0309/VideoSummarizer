@@ -8,7 +8,6 @@ from unittest.mock import patch
 from subtitles import Cue, parse, chunks, stamp, to_srt
 from downloader import validate_url
 import storage
-from config import ALLOWED_MODELS
 from local_llm import LocalLLM
 import speech
 import downloader

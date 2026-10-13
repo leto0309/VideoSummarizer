@@ -1,0 +1,12 @@
+# CI lint (see CONTRIBUTING.md): errors only, such as undefined names, unused or duplicate
+# imports and syntax problems. Formatting and import order follow the existing code.
+target-version = "py311"
+# Local factory task checkouts live under .factory/worktrees.
+extend-exclude = [".factory"]
+
+[lint]
+select = ["E4", "E7", "E9", "F"]
+
+[lint.per-file-ignores]
+# Release scripts add the project root to sys.path before importing project modules.
+"scripts/*.py" = ["E402"]

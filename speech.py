@@ -3,7 +3,7 @@ import json
 import os
 import subprocess
 import sys
-from config import MODELS, ROOT, configure_runtime
+from config import ROOT, configure_runtime
 from subtitles import Cue
 from whisper_models import ensure_model
 

@@ -5,7 +5,6 @@ import json
 import os
 from pathlib import Path
 import re
-import tempfile
 from filelock import FileLock, Timeout
 from config import ROOT, OUTPUTS, configure_runtime, default_model, gpu_info
 from links import extract_url

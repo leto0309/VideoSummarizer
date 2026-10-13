@@ -86,7 +86,7 @@ def self_test():
     import time
     import urllib.request
     from config import ffmpeg
-    from faster_whisper import WhisperModel
+    from faster_whisper import WhisperModel  # noqa: F401 -- the self-test checks that Whisper imports
     from streamlit.testing.v1 import AppTest
     app = AppTest.from_file(str(ROOT / 'app.py')).run(timeout=30)
     assert not app.exception, [item.message for item in app.exception]
