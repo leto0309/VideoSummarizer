@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.6 — 2026-10-13
+
+The link field accepts text copied with a platform's share button, such as Bilibili's "【title】 https://www.bilibili.com/video/...". The first https:// link is taken from the pasted text and shown below the field before it is used; the HTTPS Bilibili / b23.tv / YouTube allowlist is unchanged, and only the first link is considered. Metadata and the report's source line keep only the link, not the pasted title.
+
+When summary or language-version processing fails, the error message now appears below the "processing stopped" status instead of inside it, so it stays visible after the status collapses. The full traceback is still written to logs/app-errors.log. Tests that simulate failures now write that log to a temporary folder.
+
 ## 0.3.5 — 2026-10-12
 
 First-time setup checks the download sites before it starts: PyPI, nodejs.org, GitHub, the Ollama model registry and Hugging Face. The progress window lists which sites answer and which ones this setup needs, and `check-network.bat` runs the same check at any time, saving `logs/network-check.json`. The check sends HEAD requests only and uploads nothing. When a dependency, Node.js, Ollama program or model download fails, the error ends with the site involved, what it provides and what to try, and that site is checked again.

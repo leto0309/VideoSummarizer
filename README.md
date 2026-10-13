@@ -2,15 +2,15 @@
 
 Windows 免费本机视频摘要工具：Bilibili / b23.tv / YouTube、字幕优先、可选画面分析。语音识别和摘要都在本机运行，不使用付费 API 或 Ollama cloud。
 
-## v0.3.5：首次配置先检查下载网站，下载中断可续传
+## v0.3.6：链接栏可直接粘贴分享文字
 
-建议下载 [v0.3.5 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.5/VideoSummarizer-v0.3.5-windows-x64-with-whisper-ollama.zip)，完整解压到新的可写入文件夹。停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。页面标题下会显示 `VideoSummarizer · 当前运行版本：v0.3.5`。
+建议下载 [v0.3.6 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.6/VideoSummarizer-v0.3.6-windows-x64-with-whisper-ollama.zip)，完整解压到新的可写入文件夹。停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。页面标题下会显示 `VideoSummarizer · 当前运行版本：v0.3.6`。
 
-首次配置开始前，进度窗口会先检查 PyPI、Node.js 官网、GitHub、Ollama 模型库和 Hugging Face 能否连接，并标出这次配置需要哪些网站。也可以随时双击 `check-network.bat` 检查，结果保存在 `logs/network-check.json`；检查只发送连接测试请求，不上传资料。下载失败时，进度窗口最后会说明是哪个网站、影响什么，以及可以怎么做。
+链接栏现在可以直接粘贴 Bilibili 或 YouTube「分享」复制的整段文字，例如 `【视频标题】 https://www.bilibili.com/video/...`。程序会取出其中第一个 `https://` 链接，并在输入框下方显示将使用的链接；只接受 HTTPS 的 Bilibili、b23.tv 和 YouTube，规则没有放宽。摘要和记录文件只保存链接，不保存粘贴的标题。
 
-Node.js 和 Ollama 程序下载中断后会自动重试，并接着已下载的部分继续，最后仍校验官方 SHA256。本机已有 Qwen 摘要模型时不再重新下载，因此可以从另一台电脑复制完整的 `models/ollama` 文件夹。这些改进没有在中国大陆网络实测；「可以连接」不代表大文件一定能下载完成。
+处理失败时，错误提示改为显示在「处理停止」状态框下方，不会再随状态框收起而看不到；详细原因仍记录在 `logs/app-errors.log`。
 
-保留 v0.3.2 起的 CPU int8 默认设置、首次配置跳过 CUDA 和独立 `install-gpu.bat`。内含 Whisper + Ollama 版仍需首次同意后联网下载其他 Python 依赖、Node.js 与 Qwen 摘要模型，不是完全离线包。升级方法见下方「升级」。
+保留 v0.3.5 的网络检查（`check-network.bat`）、Node.js / Ollama 程序断点续传，以及 v0.3.2 起的 CPU int8 默认设置、首次配置跳过 CUDA 和独立 `install-gpu.bat`。内含 Whisper + Ollama 版仍需首次同意后联网下载其他 Python 依赖、Node.js 与 Qwen 摘要模型，不是完全离线包。升级方法见下方「升级」。
 
 以下是当前版本的使用说明。各版本发布时的说明集中在文末「历史版本说明」，只适用于当时的版本。
 
@@ -156,6 +156,16 @@ Ollama cloud 已禁用；字幕和画面只发送到项目自己的本机 Ollama
 ## 历史版本说明
 
 以下是各版本发布时的说明，原文保留作为记录，只适用于当时的版本。其中「自动安装 CUDA」「下载 source.zip 覆盖旧目录」等做法已不再适用；当前步骤以上方说明为准。
+
+### v0.3.5：首次配置先检查下载网站，下载中断可续传
+
+建议下载 [v0.3.5 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.5/VideoSummarizer-v0.3.5-windows-x64-with-whisper-ollama.zip)，完整解压到新的可写入文件夹。停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。页面标题下会显示 `VideoSummarizer · 当前运行版本：v0.3.5`。
+
+首次配置开始前，进度窗口会先检查 PyPI、Node.js 官网、GitHub、Ollama 模型库和 Hugging Face 能否连接，并标出这次配置需要哪些网站。也可以随时双击 `check-network.bat` 检查，结果保存在 `logs/network-check.json`；检查只发送连接测试请求，不上传资料。下载失败时，进度窗口最后会说明是哪个网站、影响什么，以及可以怎么做。
+
+Node.js 和 Ollama 程序下载中断后会自动重试，并接着已下载的部分继续，最后仍校验官方 SHA256。本机已有 Qwen 摘要模型时不再重新下载，因此可以从另一台电脑复制完整的 `models/ollama` 文件夹。这些改进没有在中国大陆网络实测；「可以连接」不代表大文件一定能下载完成。
+
+保留 v0.3.2 起的 CPU int8 默认设置、首次配置跳过 CUDA 和独立 `install-gpu.bat`。内含 Whisper + Ollama 版仍需首次同意后联网下载其他 Python 依赖、Node.js 与 Qwen 摘要模型，不是完全离线包。升级方法见下方「升级」。
 
 ### v0.3.4：修正内含 Whisper 安装包的来源记录
 

@@ -74,9 +74,10 @@ class ShareTextTests(unittest.TestCase):
                 validate_url(text)
 
 
-def page(run):
+def page(run, root):
+    # The page writes logs/app-errors.log under config.ROOT; keep test failures out of the project folder.
     with patch('config.gpu_info', return_value={'name': 'Test GPU', 'vram_mib': 12000, 'driver': None}), \
-         patch('whisper_models.cached_model', return_value=None), \
+         patch('config.ROOT', Path(root)), patch('whisper_models.cached_model', return_value=None), \
          patch('preferences.load', return_value={'ui_language': 'zh-CN', 'summary_language': 'follow'}), \
          patch('preferences.save'), patch('pipeline.run', run):
         app = AppTest.from_file(str(ROOT / 'app.py')).run(timeout=30)
@@ -89,7 +90,12 @@ def page(run):
 class SharePageTests(unittest.TestCase):
     def test_page_shows_and_uses_the_extracted_link(self):
         calls = []
-        app = page(lambda url, *args, **kwargs: calls.append(url) or (_ for _ in ()).throw(RuntimeError('stop')))
+
+        def stop(url, *args, **kwargs):
+            calls.append(url)
+            raise RuntimeError('stop')
+        with tempfile.TemporaryDirectory() as folder:
+            app = page(stop, folder)
         self.assertFalse(app.exception)
         self.assertIn(tr('zh-CN', 'url_extracted', url=LINK), [item.value for item in app.caption])
         self.assertEqual(calls, [LINK])
@@ -97,11 +103,15 @@ class SharePageTests(unittest.TestCase):
     def test_failure_message_stays_visible_outside_the_collapsed_status(self):
         def fail(*args, **kwargs):
             raise ValueError('请输入 HTTPS 的 Bilibili、b23.tv 或 YouTube 链接')
-        app = page(fail)
+        with tempfile.TemporaryDirectory() as folder:
+            app = page(fail, folder)
+            log = (Path(folder) / 'logs/app-errors.log').read_text(encoding='utf-8')
         self.assertFalse(app.exception)
         top_level = [child for child in app.main.children.values() if child.type == 'error']
         self.assertEqual([item.value for item in top_level], [tr('zh-CN', 'error_url')])
         self.assertEqual(app.status[0].label, tr('zh-CN', 'stopped'))
+        self.assertIn('Traceback (most recent call last)', log)
+        self.assertIn('ValueError: 请输入 HTTPS', log)
 
 
 if __name__ == '__main__':
