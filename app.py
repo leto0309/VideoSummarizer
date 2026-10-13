@@ -5,11 +5,13 @@ import traceback
 import streamlit as st
 from app_version import get_version_info
 from config import ALLOWED_MODELS, ROOT, default_model, gpu_info
+import gpu_setup
 from i18n import LANGUAGES, LANGUAGE_NAMES, friendly_error, tr
 from links import extract_url
 import preferences
 from pipeline import run
 from summary_versions import available_version, create_version
+from ytdlp_update import installed as ytdlp_version
 
 prefs = preferences.load()
 st.session_state.setdefault('ui_language', prefs['ui_language'])
@@ -36,13 +38,17 @@ st.caption(tr(ui, 'caption') + ' · ' + LANGUAGE_NAMES[language])
 with st.expander(tr(ui, 'about')):
     st.write(tr(ui, 'app_version', version=version_info.version))
     st.write(tr(ui, 'app_edition', edition=tr(ui, 'edition_' + version_info.edition)))
+    st.write(tr(ui, 'ytdlp_version', version=ytdlp_version()))
     st.markdown(f'[{tr(ui, "release_notes")}]({version_info.release_url})')
     st.caption(tr(ui, 'running_version_help'))
 if version_info.build_status != 'ok':
     st.warning(tr(ui, 'version_' + version_info.build_status))
 gpu = gpu_info()
 name = gpu['name'] if gpu['vram_mib'] else tr(ui, 'no_gpu')
-st.info(tr(ui, 'gpu', name=name, memory=gpu['vram_mib']))
+cuda_ready = bool(gpu['vram_mib']) and gpu_setup.installed()
+# Whisper small with int8_float16 fits comfortably in 2 GiB; smaller cards stay on CPU.
+hint = 'gpu_ready' if cuda_ready else 'gpu_suggest' if gpu['vram_mib'] >= 2048 else 'gpu_cpu'
+st.info(tr(ui, 'gpu', name=name, memory=gpu['vram_mib']) + tr(ui, hint))
 with st.expander(tr(ui, 'model_status')):
     from whisper_models import cached_model
     if cached_model():
@@ -58,7 +64,8 @@ if link and link != url.strip():
 visual = st.checkbox(tr(ui, 'visual'), value=False, key='visual')
 model = st.selectbox(tr(ui, 'model'), ALLOWED_MODELS,
                      index=ALLOWED_MODELS.index(default_model()), key='model')
-mode = st.selectbox(tr(ui, 'mode'), ('auto', 'cpu'), index=1, format_func=lambda code: tr(ui, code), key='mode')
+mode = st.selectbox(tr(ui, 'mode'), ('auto', 'cpu'), index=0 if cuda_ready else 1,
+                    format_func=lambda code: tr(ui, code), key='mode')
 lawful = st.checkbox(tr(ui, 'lawful'), key='lawful')
 
 def show_error(exc):

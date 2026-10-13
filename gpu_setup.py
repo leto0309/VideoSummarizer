@@ -7,6 +7,22 @@ import sys
 ROOT = Path(__file__).resolve().parent
 
 
+def installed(root=None):
+    """True when this Python has the pinned optional CUDA wheels from requirements-gpu.txt."""
+    import importlib.metadata
+    for line in (Path(root or ROOT) / 'requirements-gpu.txt').read_text(encoding='utf-8').splitlines():
+        line = line.strip()
+        if not line or line.startswith('#'):
+            continue
+        package, version = line.split('==', 1)
+        try:
+            if importlib.metadata.version(package) != version:
+                return False
+        except importlib.metadata.PackageNotFoundError:
+            return False
+    return True
+
+
 def install_gpu(progress=print):
     from filelock import FileLock, Timeout
     from install_support import install_requirements

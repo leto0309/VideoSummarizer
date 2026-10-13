@@ -23,7 +23,11 @@ TEXT = {
  'summary_language': ('摘要语言', 'Summary language'),
  'follow': ('跟随页面语言', 'Follow page language'),
  'caption': ('免费本机 AI · 字幕优先 · 单一任务序列处理', 'Free local AI · Subtitles first · One task at a time'),
- 'gpu': ('{name}｜VRAM {memory} MiB｜Whisper 默认 small / CPU int8；GPU 加速可通过 install-gpu.bat 单独安装，再选择自动模式', '{name} | VRAM {memory} MiB | Whisper small / CPU int8 by default; run install-gpu.bat for optional GPU acceleration, then select Automatic'),
+ 'gpu': ('{name}｜VRAM {memory} MiB｜', '{name} | VRAM {memory} MiB | '),
+ 'gpu_cpu': ('Whisper small 使用 CPU int8 转录。', 'Whisper small transcribes with CPU int8.'),
+ 'gpu_suggest': ('Whisper 目前用 CPU int8 转录，长视频较慢。这张显卡可以加速：在没有摘要任务时双击软件文件夹里的 install-gpu.bat（需下载超过 1 GB），完成后重启程序。', 'Whisper currently transcribes with CPU int8, which is slow for long videos. This graphics card can speed it up: when no summary is running, double-click install-gpu.bat in the application folder (downloads over 1 GB), then restart the program.'),
+ 'gpu_ready': ('GPU 加速已安装，「语音识别运算」默认使用「自动：CUDA → CPU」；CUDA 失败时会自动改用 CPU。', 'GPU acceleration is installed, so speech recognition defaults to Automatic: CUDA → CPU. It falls back to CPU if CUDA fails.'),
+ 'ytdlp_version': ('视频下载组件 yt-dlp：{version}', 'Video download component yt-dlp: {version}'),
  'no_gpu': ('未检测到 NVIDIA GPU', 'No NVIDIA GPU detected'),
  'model_status': ('Whisper 语音模型状态 / 下载失败处理', 'Whisper model status / Download help'),
  'model_ready': ('Whisper small 文件已就绪；转录使用本机文件，不再连接下载。', 'Whisper small is ready. Transcription uses local files without another download.'),
@@ -80,6 +84,7 @@ TEXT = {
  'error_model': ('本机摘要模型未就绪或无法连接。请完成首次配置并检查 Ollama。详细原因记录于 logs/app-errors.log。', 'The local summary model is unavailable. Complete first-time setup and check Ollama. Details are in logs/app-errors.log.'),
  'error_whisper': ('Whisper small 未就绪或下载失败。请运行 prepare-whisper.bat；无法连接时可复制 models/whisper。切换 CPU 不会修复模型下载。详细原因记录于 logs/app-errors.log。', 'Whisper small is not ready or its download failed. Run prepare-whisper.bat or copy models/whisper. Switching to CPU cannot fix a model download. Details are in logs/app-errors.log.'),
  'error_url': ('请输入可合法访问的 HTTPS Bilibili、b23.tv 或 YouTube 链接。', 'Enter a legally accessible HTTPS Bilibili, b23.tv or YouTube URL.'),
+ 'error_platform': ('无法从视频平台读取这个视频。平台可能已经改版：请双击软件文件夹里的 update-ytdlp.bat 更新下载组件，重启电脑后再试。需要登录、付费或已删除的视频无法处理。详细原因记录于 logs/app-errors.log。', 'Could not read this video from the platform. The platform may have changed: double-click update-ytdlp.bat in the application folder to update the download component, restart the computer and try again. Videos that need login or payment, or were removed, cannot be processed. Details are in logs/app-errors.log.'),
 }
 
 def validate_language(language):
@@ -114,4 +119,6 @@ def friendly_error(error, language):
         return tr(language, 'error_url')
     if 'Ollama' in text or '下载本机模型' in text or '11435' in text:
         return tr(language, 'error_model')
+    if type(error).__module__.startswith('yt_dlp'):
+        return tr(language, 'error_platform')
     return tr(language, 'error_generic')

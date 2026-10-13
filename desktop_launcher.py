@@ -4,12 +4,19 @@ import importlib.metadata
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 import traceback
 
 ROOT = Path(__file__).resolve().parent
 READY = ROOT / 'portable-ready.json'
+# update-ytdlp.bat may install a newer build than the tested pin when platforms change.
+AT_LEAST = {'yt-dlp', 'yt-dlp-ejs'}
+
+
+def version_key(text):
+    return tuple(int(part) for part in re.findall(r'\d+', text))
 
 
 def dependencies_ready():
@@ -21,9 +28,10 @@ def dependencies_ready():
         package, version = line.split('==', 1)
         package = package.split('[', 1)[0]
         try:
-            if importlib.metadata.version(package) != version:
-                return False
+            installed = importlib.metadata.version(package)
         except importlib.metadata.PackageNotFoundError:
+            return False
+        if installed != version and not (package in AT_LEAST and version_key(installed) >= version_key(version)):
             return False
     return True
 
