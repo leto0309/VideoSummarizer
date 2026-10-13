@@ -10,6 +10,7 @@ from downloader import metadata
 from i18n import tr
 from local_llm import LocalLLM
 from logfiles import rotate
+import speech
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -65,6 +66,13 @@ class LogRotationTests(unittest.TestCase):
              patch.object(desktop_launcher, 'needs_setup', return_value=False), self.assertRaises(SystemExit):
             desktop_launcher.main()
         rotated.assert_called_once_with(desktop_launcher.ROOT / 'logs' / 'desktop.log')
+
+
+class WhisperThreadTests(unittest.TestCase):
+    def test_cpu_threads_follow_the_machine_up_to_eight(self):
+        for cores, expected in ((2, 2), (6, 6), (16, 8), (None, 4)):
+            with self.subTest(cores=cores), patch.object(speech.os, 'cpu_count', return_value=cores):
+                self.assertEqual(speech.cpu_threads(), expected)
 
 
 if __name__ == '__main__':

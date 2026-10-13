@@ -32,6 +32,11 @@ def transcribe(audio, task, model='small', mode='auto'):
     raise RuntimeError('Whisper 转录失败：' + '\n'.join(errors))
 
 
+def cpu_threads():
+    # More cores speed up CPU transcription; beyond eight the gain is small and the PC stays usable.
+    return min(os.cpu_count() or 4, 8)
+
+
 def _worker(audio, target, model_name, device):
     configure_runtime()
     import ctranslate2
@@ -41,7 +46,7 @@ def _worker(audio, target, model_name, device):
         if ctranslate2.get_cuda_device_count() < 1 or compute not in ctranslate2.get_supported_compute_types('cuda'):
             raise RuntimeError('GPU 不支持 CUDA int8_float16')
     model = WhisperModel(model_name, device=device, compute_type=compute,
-                         local_files_only=True, cpu_threads=4, num_workers=1)
+                         local_files_only=True, cpu_threads=cpu_threads(), num_workers=1)
     segments, info = model.transcribe(audio, beam_size=5, vad_filter=True,
                                      condition_on_previous_text=False)
     cues = [{'start': s.start, 'end': s.end, 'text': s.text.strip()} for s in segments if s.text.strip()]
