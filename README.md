@@ -2,15 +2,17 @@
 
 Windows 免费本机视频摘要工具：Bilibili / b23.tv / YouTube、字幕优先、可选画面分析。语音识别和摘要都在本机运行，不使用付费 API 或 Ollama cloud。
 
-## v0.3.6：链接栏可直接粘贴分享文字
+## v0.3.7：可自行更新 yt-dlp，网页提示 GPU 加速
 
-建议下载 [v0.3.6 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.6/VideoSummarizer-v0.3.6-windows-x64-with-whisper-ollama.zip)，完整解压到新的可写入文件夹。停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。页面标题下会显示 `VideoSummarizer · 当前运行版本：v0.3.6`。
+建议下载 [v0.3.7 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.7/VideoSummarizer-v0.3.7-windows-x64-with-whisper-ollama.zip)，完整解压到新的可写入文件夹。停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。页面标题下会显示 `VideoSummarizer · 当前运行版本：v0.3.7`。
 
-链接栏现在可以直接粘贴 Bilibili 或 YouTube「分享」复制的整段文字，例如 `【视频标题】 https://www.bilibili.com/video/...`。程序会取出其中第一个 `https://` 链接，并在输入框下方显示将使用的链接；只接受 HTTPS 的 Bilibili、b23.tv 和 YouTube，规则没有放宽。摘要和记录文件只保存链接，不保存粘贴的标题。
+B 站、YouTube 改版导致下载失败时，可以双击软件文件夹里的 `update-ytdlp.bat` 更新下载组件 yt-dlp，不必等新版本；更新后出问题，再运行它选择「恢复」即可装回本版本测试过的版本。详见下方「常见问题」。网页的「关于 VideoSummarizer」会显示当前 yt-dlp 版本。
 
-处理失败时，错误提示改为显示在「处理停止」状态框下方，不会再随状态框收起而看不到；详细原因仍记录在 `logs/app-errors.log`。
+网页会根据电脑情况提示 GPU 加速：检测到 NVIDIA 显卡、但还没安装 GPU 加速时，建议运行 `install-gpu.bat`；安装后「语音识别运算」默认改为「自动：CUDA → CPU」。
 
-保留 v0.3.5 的网络检查（`check-network.bat`）、Node.js / Ollama 程序断点续传，以及 v0.3.2 起的 CPU int8 默认设置、首次配置跳过 CUDA 和独立 `install-gpu.bat`。内含 Whisper + Ollama 版仍需首次同意后联网下载其他 Python 依赖、Node.js 与 Qwen 摘要模型，不是完全离线包。升级方法见下方「升级」。
+其他改进：程序提示统一为简体中文；摘要记录里的来源链接去掉 `vd_source`、`si` 等分享跟踪参数；摘要中的 16:9、3:1 等比例和比分不再被误当成时间戳清除；日志超过 2 MB 自动轮转，只保留一份旧档；CPU 语音识别按电脑核心数使用线程（最多 8 个）。
+
+保留 v0.3.6 的分享文字链接识别、v0.3.5 的网络检查（`check-network.bat`）与断点续传，以及 CPU int8 默认设置、首次配置跳过 CUDA 和独立 `install-gpu.bat`。内含 Whisper + Ollama 版仍需首次同意后联网下载其他 Python 依赖、Node.js 与 Qwen 摘要模型，不是完全离线包。升级方法见下方「升级」。
 
 以下是当前版本的使用说明。各版本发布时的说明集中在文末「历史版本说明」，只适用于当时的版本。
 
@@ -158,6 +160,16 @@ Ollama cloud 已禁用；字幕和画面只发送到项目自己的本机 Ollama
 ## 历史版本说明
 
 以下是各版本发布时的说明，原文保留作为记录，只适用于当时的版本。其中「自动安装 CUDA」「下载 source.zip 覆盖旧目录」等做法已不再适用；当前步骤以上方说明为准。
+
+### v0.3.6：链接栏可直接粘贴分享文字
+
+建议下载 [v0.3.6 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.6/VideoSummarizer-v0.3.6-windows-x64-with-whisper-ollama.zip)，完整解压到新的可写入文件夹。停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。页面标题下会显示 `VideoSummarizer · 当前运行版本：v0.3.6`。
+
+链接栏现在可以直接粘贴 Bilibili 或 YouTube「分享」复制的整段文字，例如 `【视频标题】 https://www.bilibili.com/video/...`。程序会取出其中第一个 `https://` 链接，并在输入框下方显示将使用的链接；只接受 HTTPS 的 Bilibili、b23.tv 和 YouTube，规则没有放宽。摘要和记录文件只保存链接，不保存粘贴的标题。
+
+处理失败时，错误提示改为显示在「处理停止」状态框下方，不会再随状态框收起而看不到；详细原因仍记录在 `logs/app-errors.log`。
+
+保留 v0.3.5 的网络检查（`check-network.bat`）、Node.js / Ollama 程序断点续传，以及 v0.3.2 起的 CPU int8 默认设置、首次配置跳过 CUDA 和独立 `install-gpu.bat`。内含 Whisper + Ollama 版仍需首次同意后联网下载其他 Python 依赖、Node.js 与 Qwen 摘要模型，不是完全离线包。升级方法见下方「升级」。
 
 ### v0.3.5：首次配置先检查下载网站，下载中断可续传
 
