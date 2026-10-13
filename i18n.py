@@ -84,6 +84,7 @@ TEXT = {
  'error_model': ('本机摘要模型未就绪或无法连接。请完成首次配置并检查 Ollama。详细原因记录于 logs/app-errors.log。', 'The local summary model is unavailable. Complete first-time setup and check Ollama. Details are in logs/app-errors.log.'),
  'error_whisper': ('Whisper small 未就绪或下载失败。请运行 prepare-whisper.bat；无法连接时可复制 models/whisper。切换 CPU 不会修复模型下载。详细原因记录于 logs/app-errors.log。', 'Whisper small is not ready or its download failed. Run prepare-whisper.bat or copy models/whisper. Switching to CPU cannot fix a model download. Details are in logs/app-errors.log.'),
  'error_url': ('请输入可合法访问的 HTTPS Bilibili、b23.tv 或 YouTube 链接。', 'Enter a legally accessible HTTPS Bilibili, b23.tv or YouTube URL.'),
+ 'error_no_media': ('视频平台这次没有提供可下载的音频或视频。B 站有时会暂时限制未登录的访问，请过一段时间再试；仍然失败时，双击软件文件夹里的 update-ytdlp.bat 更新下载组件，重启电脑后再试。本工具不会登录或绕过平台限制。详细原因记录于 logs/app-errors.log。', 'The platform did not offer any downloadable audio or video this time. Bilibili sometimes temporarily limits access without login, so try again later. If it keeps failing, double-click update-ytdlp.bat in the application folder to update the download component, restart the computer and try again. This tool does not log in or bypass platform limits. Details are in logs/app-errors.log.'),
  'error_platform': ('无法从视频平台读取这个视频。平台可能已经改版：请双击软件文件夹里的 update-ytdlp.bat 更新下载组件，重启电脑后再试。需要登录、付费或已删除的视频无法处理。详细原因记录于 logs/app-errors.log。', 'Could not read this video from the platform. The platform may have changed: double-click update-ytdlp.bat in the application folder to update the download component, restart the computer and try again. Videos that need login or payment, or were removed, cannot be processed. Details are in logs/app-errors.log.'),
 }
 
@@ -113,6 +114,8 @@ def friendly_error(error, language):
     text = str(error)
     if any(text == tr(code, 'busy') for code in LANGUAGES):
         return tr(language, 'busy')
+    if type(error).__name__ == 'NoMediaError':
+        return tr(language, 'error_no_media')
     if type(error).__name__ == 'ModelUnavailableError':
         return tr(language, 'error_whisper')
     if isinstance(error, ValueError) and ('HTTPS' in text or 'Bilibili' in text):
