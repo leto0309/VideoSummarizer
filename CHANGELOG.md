@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.8 — 2026-10-14
+
+When a platform answers without any downloadable audio or video, the page now says so and explains what to do instead of showing the generic "check your network, local model and file permissions" message. Testing v0.3.7 found that Bilibili's risk control sometimes answers anonymous requests this way. The message says to try again later, run `update-ytdlp.bat` if it keeps failing, and that the tool never logs in or bypasses platform limits. The README FAQ has a matching entry. The Traditional Chinese wording avoids an OpenCC mis-conversion.
+
+Model-written headings no longer break the report outline. A frame or timeline note's leading title (for example "# 画面描述", or an unrelated "# 电驴") is dropped, other headings become bold text, and level-one headings in the overall summary become level two. `metadata.json` keeps the model's original text.
+
+Add `scripts/verify_release.py`, which checks a published release through the public GitHub API: checksum manifests against GitHub's digests, the full source ZIP, and the version, edition and base hashes of the Windows ZIPs read through HTTP Range requests. CONTRIBUTING describes running it after the release workflows finish.
+
 ## 0.3.7 — 2026-10-14
 
 Add `update-ytdlp.bat`. When Bilibili or YouTube changes and downloads fail, it updates the bundled yt-dlp and yt-dlp-ejs from PyPI inside the application folder, or restores the versions tested with this release; it refuses to run while a summary task is active. The About section shows the installed yt-dlp version, and the readiness check accepts yt-dlp versions newer than the pin so an update does not trigger first-time setup again. The page now gives a GPU hint based on the computer: with an NVIDIA GPU and no GPU runtime it suggests `install-gpu.bat`; once the runtime is installed, speech recognition defaults to "Auto: CUDA → CPU".
