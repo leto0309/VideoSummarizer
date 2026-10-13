@@ -7,6 +7,10 @@ from storage import guard, size
 from subtitles import parse
 
 
+class NoMediaError(RuntimeError):
+    """The platform answered without any downloadable audio or video format."""
+
+
 def validate_url(url):
     url = extract_url(url)
     value = urlparse(url)
@@ -107,7 +111,8 @@ def get_subtitles(info, task):
 
 def download(info, task, video=False):
     if not info.get('formats') and not info.get('url'):
-        raise RuntimeError('平台没有提供可公开下载的媒体格式；已停止，不尝试登录或绕过限制。')
+        # Bilibili's risk control can return a play-info answer without formats for anonymous requests.
+        raise NoMediaError('平台没有提供可公开下载的媒体格式（平台可能暂时限制了访问）；已停止，不尝试登录或绕过限制。')
     guard()
     opts = options(task)
     opts['format'] = ('best[height<=480][vcodec!=none][acodec!=none]/bestvideo[height<=480]/worstvideo/worst[vcodec!=none]' if video
