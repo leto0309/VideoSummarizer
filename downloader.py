@@ -2,19 +2,21 @@ from pathlib import Path
 from urllib.parse import urlparse, urlunparse, parse_qs, urlencode
 import yt_dlp
 from config import ffmpeg, TEMP_LIMIT, RESERVE, node_runtime
+from links import extract_url
 from storage import guard, size
 from subtitles import parse
 
 
 def validate_url(url):
-    value = urlparse(url.strip())
+    url = extract_url(url)
+    value = urlparse(url)
     host = (value.hostname or '').lower()
     allowed = ('bilibili.com', 'b23.tv', 'youtube.com', 'youtu.be')
     if value.scheme != 'https' or value.username or value.password or value.port not in (None, 443):
         raise ValueError('请输入 HTTPS 的 Bilibili、b23.tv 或 YouTube 链接')
     if not any(host == h or host.endswith('.'+h) for h in allowed):
         raise ValueError('只支持 Bilibili、b23.tv 与 YouTube')
-    return url.strip()
+    return url
 
 
 def options(task):
