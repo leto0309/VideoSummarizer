@@ -40,8 +40,9 @@ def update(restore=False, progress=print):
                 error = subprocess.CalledProcessError(code, command)
                 explain(error, 'pypi')
                 raise error
-            progress(f'yt-dlp：{before} → {installed()}。正在运行的网页仍在使用旧版本，'
-                     '请重启电脑后再打开 VideoSummarizer，新版本才会生效。')
+            # Closing the page leaves the background service running; restarting Windows stops it.
+            progress(f'yt-dlp {"已恢复" if restore else "已更新"}：{before} → {installed()}。'
+                     '正在运行的网页仍在使用更改前的版本，请重启电脑后再打开 VideoSummarizer，更改才会生效。')
     except Timeout as exc:
         raise RuntimeError('摘要任务正在运行，请等待完成后再更新下载组件。') from exc
 
