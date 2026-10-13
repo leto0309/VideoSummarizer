@@ -7,6 +7,7 @@ import re
 import sys
 import traceback
 from config import MODELS, ROOT
+from logfiles import rotate
 
 REPO = 'Systran/faster-whisper-small'
 
@@ -85,7 +86,7 @@ def ensure_model(model='small', progress=lambda message: None):
         except Exception as exc:
             logs = ROOT / 'logs'
             logs.mkdir(exist_ok=True)
-            with (logs / 'whisper-download.log').open('a', encoding='utf-8') as handle:
+            with rotate(logs / 'whisper-download.log').open('a', encoding='utf-8') as handle:
                 traceback.print_exc(file=handle)
             raise ModelUnavailableError(
                 'Whisper small 模型尚未准备完成：下载失败或 Hugging Face 连接超时。'

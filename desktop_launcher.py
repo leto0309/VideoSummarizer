@@ -9,6 +9,8 @@ import subprocess
 import sys
 import traceback
 
+from logfiles import rotate
+
 ROOT = Path(__file__).resolve().parent
 READY = ROOT / 'portable-ready.json'
 # update-ytdlp.bat may install a newer build than the tested pin when platforms change.
@@ -124,6 +126,8 @@ def main():
     parser.add_argument('--check', action='store_true')
     parser.add_argument('--install-gpu', action='store_true')
     args = parser.parse_args()
+    # The native window appends its whole output to desktop.log on every start.
+    rotate(ROOT / 'logs' / 'desktop.log')
     if args.self_test:
         self_test()
         return

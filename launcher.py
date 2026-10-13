@@ -10,6 +10,7 @@ import traceback
 from datetime import datetime
 import requests
 from config import ROOT, MODELS, TOOLS, OLLAMA_URL, default_model
+from logfiles import rotate
 
 
 def owned_process(pid, executable):
@@ -114,7 +115,7 @@ def startup_status(message):
     print(line, flush=True)
     logs = ROOT / 'logs'
     logs.mkdir(exist_ok=True)
-    with (logs / 'startup.log').open('a', encoding='utf-8') as handle:
+    with rotate(logs / 'startup.log').open('a', encoding='utf-8') as handle:
         handle.write(line + '\n')
 
 
@@ -150,8 +151,8 @@ def main():
         except requests.RequestException:
             pass
         startup_status('正在启动本机网页服务。')
-        with (ROOT / 'logs' / 'streamlit.log').open('a', encoding='utf-8') as web_out, \
-             (ROOT / 'logs' / 'streamlit-error.log').open('a', encoding='utf-8') as web_err:
+        with rotate(ROOT / 'logs' / 'streamlit.log').open('a', encoding='utf-8') as web_out, \
+             rotate(ROOT / 'logs' / 'streamlit-error.log').open('a', encoding='utf-8') as web_err:
             process = subprocess.Popen([sys.executable, '-m', 'streamlit', 'run', str(ROOT / 'app.py'),
                         '--server.address=127.0.0.1', '--server.port=8501',
                         '--browser.gatherUsageStats=false',
@@ -180,6 +181,6 @@ if __name__ == '__main__':
         main()
     except Exception as exc:
         startup_status('启动失败：' + str(exc))
-        with (ROOT / 'logs' / 'startup.log').open('a', encoding='utf-8') as handle:
+        with rotate(ROOT / 'logs' / 'startup.log').open('a', encoding='utf-8') as handle:
             handle.write(traceback.format_exc() + '\n')
         sys.exit(1)

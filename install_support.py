@@ -9,6 +9,8 @@ import sys
 import threading
 import time
 
+from logfiles import rotate
+
 ROOT = Path(__file__).resolve().parent
 
 
@@ -55,7 +57,7 @@ def run_installer(command, *, timeout, root=None, progress=print):
     notice = started
     output_done = False
     try:
-        with (logs / 'install.log').open('a', encoding='utf-8') as log:
+        with rotate(logs / 'install.log').open('a', encoding='utf-8') as log:
             while not output_done or process.poll() is None:
                 now = time.monotonic()
                 if now - started >= timeout:

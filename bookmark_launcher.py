@@ -15,6 +15,7 @@ import webbrowser
 import requests
 from launcher import owned_process
 from config import PYTHON
+from logfiles import rotate
 
 ROOT = Path(__file__).resolve().parent
 WEB_URL = 'http://127.0.0.1:8501/'
@@ -32,7 +33,7 @@ def validate_uri(value):
 def log(message):
     folder = ROOT / 'logs'
     folder.mkdir(exist_ok=True)
-    with (folder / 'bookmark.log').open('a', encoding='utf-8') as handle:
+    with rotate(folder / 'bookmark.log').open('a', encoding='utf-8') as handle:
         handle.write(time.strftime('%Y-%m-%d %H:%M:%S ') + message + '\n')
 
 
@@ -126,7 +127,7 @@ def open_on_demand(session, launch, open_page, deadline_seconds=240):
 
 
 def launch_service():
-    with (ROOT / 'logs' / 'bookmark-service.log').open('a', encoding='utf-8') as output:
+    with rotate(ROOT / 'logs' / 'bookmark-service.log').open('a', encoding='utf-8') as output:
         return subprocess.Popen([str(PYTHON), '-u', str(ROOT / 'launcher.py'), '--headless'],
                                 cwd=ROOT, stdin=subprocess.DEVNULL, stdout=output, stderr=output,
                                 env={**os.environ, 'PYTHONIOENCODING': 'utf-8', 'OLLAMA_NO_CLOUD': '1'},

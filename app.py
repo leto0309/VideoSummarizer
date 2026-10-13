@@ -8,6 +8,7 @@ from config import ALLOWED_MODELS, ROOT, default_model, gpu_info
 import gpu_setup
 from i18n import LANGUAGES, LANGUAGE_NAMES, friendly_error, tr
 from links import extract_url
+from logfiles import rotate
 import preferences
 from pipeline import run
 from summary_versions import available_version, create_version
@@ -73,7 +74,7 @@ def show_error(exc):
     try:
         logs = ROOT / 'logs'
         logs.mkdir(exist_ok=True)
-        with (logs / 'app-errors.log').open('a', encoding='utf-8') as handle:
+        with rotate(logs / 'app-errors.log').open('a', encoding='utf-8') as handle:
             handle.write(datetime.now(timezone.utc).isoformat() + '\n')
             traceback.print_exception(exc, file=handle)
     except OSError:
