@@ -2,17 +2,15 @@
 
 Windows 免费本机视频摘要工具：Bilibili / b23.tv / YouTube、字幕优先、可选画面分析。语音识别和摘要都在本机运行，不使用付费 API 或 Ollama cloud。
 
-## v0.3.7：可自行更新 yt-dlp，网页提示 GPU 加速
+## v0.3.8：B 站暂时拿不到视频时给出明确提示
 
-建议下载 [v0.3.7 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.7/VideoSummarizer-v0.3.7-windows-x64-with-whisper-ollama.zip)，完整解压到新的可写入文件夹。停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。页面标题下会显示 `VideoSummarizer · 当前运行版本：v0.3.7`。
+建议下载 [v0.3.8 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.8/VideoSummarizer-v0.3.8-windows-x64-with-whisper-ollama.zip)，完整解压到新的可写入文件夹。停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。页面标题下会显示 `VideoSummarizer · 当前运行版本：v0.3.8`。
 
-B 站、YouTube 改版导致下载失败时，可以双击软件文件夹里的 `update-ytdlp.bat` 更新下载组件 yt-dlp，不必等新版本；更新后出问题，再运行它选择「恢复」即可装回本版本测试过的版本。详见下方「常见问题」。网页的「关于 VideoSummarizer」会显示当前 yt-dlp 版本。
+B 站有时会暂时限制未登录的访问，这时同一个视频也拿不到音频或视频。以前页面只显示「请检查网络、本机模型和文件权限」，容易查错方向；现在会明确提示「视频平台这次没有提供可下载的音频或视频」，并说明请过一段时间再试，仍然失败时用 `update-ytdlp.bat` 更新下载组件。本工具不会登录或绕过平台限制。详见下方「常见问题」。
 
-网页会根据电脑情况提示 GPU 加速：检测到 NVIDIA 显卡、但还没安装 GPU 加速时，建议运行 `install-gpu.bat`；安装后「语音识别运算」默认改为「自动：CUDA → CPU」。
+摘要报告的格式也更整齐：本机模型在画面描述或时间线小节里自己加的大标题（例如「# 画面描述」）会去掉或改为粗体，不再打乱报告的标题层级；`metadata.json` 仍保存模型原文，方便核对。
 
-其他改进：程序提示统一为简体中文；摘要记录里的来源链接去掉 `vd_source`、`si` 等分享跟踪参数；摘要中的 16:9、3:1 等比例和比分不再被误当成时间戳清除；日志超过 2 MB 自动轮转，只保留一份旧档；CPU 语音识别按电脑核心数使用线程（最多 8 个）。
-
-保留 v0.3.6 的分享文字链接识别、v0.3.5 的网络检查（`check-network.bat`）与断点续传，以及 CPU int8 默认设置、首次配置跳过 CUDA 和独立 `install-gpu.bat`。内含 Whisper + Ollama 版仍需首次同意后联网下载其他 Python 依赖、Node.js 与 Qwen 摘要模型，不是完全离线包。升级方法见下方「升级」。
+保留 v0.3.7 的 `update-ytdlp.bat` 与 GPU 加速提示、v0.3.6 的分享文字链接识别、v0.3.5 的网络检查（`check-network.bat`）与断点续传，以及 CPU int8 默认设置、首次配置跳过 CUDA 和独立 `install-gpu.bat`。内含 Whisper + Ollama 版仍需首次同意后联网下载其他 Python 依赖、Node.js 与 Qwen 摘要模型，不是完全离线包。升级方法见下方「升级」。
 
 以下是当前版本的使用说明。各版本发布时的说明集中在文末「历史版本说明」，只适用于当时的版本。
 
@@ -161,6 +159,18 @@ Ollama cloud 已禁用；字幕和画面只发送到项目自己的本机 Ollama
 ## 历史版本说明
 
 以下是各版本发布时的说明，原文保留作为记录，只适用于当时的版本。其中「自动安装 CUDA」「下载 source.zip 覆盖旧目录」等做法已不再适用；当前步骤以上方说明为准。
+
+### v0.3.7：可自行更新 yt-dlp，网页提示 GPU 加速
+
+建议下载 [v0.3.7 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.7/VideoSummarizer-v0.3.7-windows-x64-with-whisper-ollama.zip)，完整解压到新的可写入文件夹。停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。页面标题下会显示 `VideoSummarizer · 当前运行版本：v0.3.7`。
+
+B 站、YouTube 改版导致下载失败时，可以双击软件文件夹里的 `update-ytdlp.bat` 更新下载组件 yt-dlp，不必等新版本；更新后出问题，再运行它选择「恢复」即可装回本版本测试过的版本。详见下方「常见问题」。网页的「关于 VideoSummarizer」会显示当前 yt-dlp 版本。
+
+网页会根据电脑情况提示 GPU 加速：检测到 NVIDIA 显卡、但还没安装 GPU 加速时，建议运行 `install-gpu.bat`；安装后「语音识别运算」默认改为「自动：CUDA → CPU」。
+
+其他改进：程序提示统一为简体中文；摘要记录里的来源链接去掉 `vd_source`、`si` 等分享跟踪参数；摘要中的 16:9、3:1 等比例和比分不再被误当成时间戳清除；日志超过 2 MB 自动轮转，只保留一份旧档；CPU 语音识别按电脑核心数使用线程（最多 8 个）。
+
+保留 v0.3.6 的分享文字链接识别、v0.3.5 的网络检查（`check-network.bat`）与断点续传，以及 CPU int8 默认设置、首次配置跳过 CUDA 和独立 `install-gpu.bat`。内含 Whisper + Ollama 版仍需首次同意后联网下载其他 Python 依赖、Node.js 与 Qwen 摘要模型，不是完全离线包。升级方法见下方「升级」。
 
 ### v0.3.6：链接栏可直接粘贴分享文字
 
