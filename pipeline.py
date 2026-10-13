@@ -118,10 +118,29 @@ def run(url, visual=False, model=None, whisper='small', mode='auto', progress=la
         raise RuntimeError(tr(ui, 'busy'))
 
 
+HEADING = re.compile(r'^ {0,3}#{1,6}[ \t]+(.*?)(?:[ \t]+#+)?[ \t]*$')
+
+
+def note_body(text):
+    """Model notes go under the report's own ### headings: drop their leading title and turn
+    other Markdown headings into bold text, so the report outline stays intact."""
+    lines = text.strip().splitlines()
+    title = None
+    while lines and (HEADING.match(lines[0]) or not lines[0].strip()):
+        heading = HEADING.match(lines.pop(0))
+        title = title or (heading and heading.group(1))
+    if not lines:
+        return f'**{title}**' if title else ''
+    return '\n'.join(f'**{m.group(1)}**' if (m := HEADING.match(line)) and m.group(1) else line
+                     for line in lines)
+
+
 def render_report(meta, summary, sections):
     language = validate_language(meta.get('summary_language', DEFAULT_LANGUAGE))
     # Convert generated prose only; preserve source titles, names and URLs.
     summary = normalize(summary, language)
+    # The report title is the only level-one heading.
+    summary = re.sub(r'(?m)^ {0,3}#(?= )', '##', summary)
     title = (meta.get('title') or tr(language, 'video')).replace('\n', ' ')
     url = meta.get('webpage_url') or meta['original_url']
     lines = [f'# {title}', '', f'- {tr(language, "source")}：{url}',
@@ -133,11 +152,11 @@ def render_report(meta, summary, sections):
              f'- {tr(language, "references")}：subtitles.srt、metadata.json', '', summary, '',
              '## ' + tr(language, 'timeline')]
     for section in sections:
-        lines += ['', f'### {section["start"]} – {section["end"]}', normalize(section['note'], language)]
+        lines += ['', f'### {section["start"]} – {section["end"]}', normalize(note_body(section['note']), language)]
     if meta['frames']:
         lines += ['', '## ' + tr(language, 'frames'), '', tr(language, 'frame_retained')]
         for frame in meta['frames']:
-            lines += ['', f'### {frame["timestamp"]}', normalize(frame['description'], language)]
+            lines += ['', f'### {frame["timestamp"]}', normalize(note_body(frame['description']), language)]
     limits = ([tr(language, key) for key in meta['limitation_keys']] if meta.get('limitation_keys')
               else [normalize(value, language) for value in meta['limitations']])
     lines += ['', '## ' + tr(language, 'limitations'), '', *['- '+value for value in limits]]
