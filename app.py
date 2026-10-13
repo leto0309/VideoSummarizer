@@ -6,6 +6,7 @@ import streamlit as st
 from app_version import get_version_info
 from config import ALLOWED_MODELS, ROOT, default_model, gpu_info
 from i18n import LANGUAGES, LANGUAGE_NAMES, friendly_error, tr
+from links import extract_url
 import preferences
 from pipeline import run
 from summary_versions import available_version, create_version
@@ -51,6 +52,9 @@ with st.expander(tr(ui, 'model_status')):
         st.write(tr(ui, 'model_help'))
 # Stable keys and immediate commits preserve inputs across language changes.
 url = st.text_input(tr(ui, 'url'), placeholder='https://www.bilibili.com/video/...', key='video_url')
+link = extract_url(url)
+if link and link != url.strip():
+    st.caption(tr(ui, 'url_extracted', url=link))
 visual = st.checkbox(tr(ui, 'visual'), value=False, key='visual')
 model = st.selectbox(tr(ui, 'model'), ALLOWED_MODELS,
                      index=ALLOWED_MODELS.index(default_model()), key='model')
@@ -58,12 +62,13 @@ mode = st.selectbox(tr(ui, 'mode'), ('auto', 'cpu'), index=1, format_func=lambda
 lawful = st.checkbox(tr(ui, 'lawful'), key='lawful')
 
 def show_error(exc):
+    # Called after the status block closes, so the message is not hidden in the collapsed status.
     try:
         logs = ROOT / 'logs'
         logs.mkdir(exist_ok=True)
         with (logs / 'app-errors.log').open('a', encoding='utf-8') as handle:
             handle.write(datetime.now(timezone.utc).isoformat() + '\n')
-            traceback.print_exc(file=handle)
+            traceback.print_exception(exc, file=handle)
     except OSError:
         pass
     st.error(friendly_error(exc, ui))
@@ -73,15 +78,18 @@ if st.button(tr(ui, 'start'), type='primary', key='generate'):
     if not lawful:
         st.warning(tr(ui, 'consent'))
     else:
+        failure = None
         with st.status(tr(ui, 'processing'), expanded=True) as status:
             try:
-                folder = run(url, visual, model, mode=mode, language=language,
+                folder = run(link, visual, model, mode=mode, language=language,
                              ui_language=ui, progress=status.write)
                 st.session_state['result'] = str(folder)
                 status.update(label=tr(ui, 'done'), state='complete')
             except Exception as exc:
                 status.update(label=tr(ui, 'stopped'), state='error')
-                show_error(exc)
+                failure = exc
+        if failure:
+            show_error(failure)
 if 'result' in st.session_state:
     folder = Path(st.session_state['result'])
     version = available_version(folder, language) or folder
@@ -92,6 +100,7 @@ if 'result' in st.session_state:
     if actual_language != language:
         st.caption(tr(ui, 'version_help'))
         if st.button(tr(ui, 'make_version', language=LANGUAGE_NAMES[language]), key='translate'):
+            failure = None
             with st.status(tr(ui, 'processing'), expanded=True) as status:
                 try:
                     create_version(folder, language)
@@ -99,7 +108,9 @@ if 'result' in st.session_state:
                     st.rerun()
                 except Exception as exc:
                     status.update(label=tr(ui, 'stopped'), state='error')
-                    show_error(exc)
+                    failure = exc
+            if failure:
+                show_error(failure)
     for filename, mime in [('summary.md', 'text/markdown'), ('subtitles.srt', 'text/plain'), ('metadata.json', 'application/json')]:
         source = folder if filename == 'subtitles.srt' else version
         download_name = filename if version == folder or filename == 'subtitles.srt' else filename.replace('.', '.' + language + '.', 1)

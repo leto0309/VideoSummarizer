@@ -30,6 +30,7 @@ TEXT = {
  'model_missing': ('Whisper small 尚未准备完成。有字幕的视频可直接处理；无字幕视频需先下载语音模型。', 'Whisper small is not ready. Videos with subtitles can be processed; other videos need the speech model first.'),
  'model_help': ('双击 prepare-whisper.bat 下载（约 464 MiB）。无法连接 Hugging Face 时，可复制另一台电脑的 models/whisper 文件夹，或将官方文件放到 models/whisper/small。详见 README。', 'Run prepare-whisper.bat (about 464 MiB). If Hugging Face is unreachable, copy models/whisper from another computer or place the official files in models/whisper/small. See README.'),
  'url': ('Bilibili、b23.tv 或 YouTube 链接', 'Bilibili, b23.tv or YouTube URL'),
+ 'url_extracted': ('已从粘贴的文字中取出链接，将使用：{url}', 'Using the link found in the pasted text: {url}'),
  'visual': ('加入约 8 张代表画面的本机分析（需额外下载低分辨率视频）', 'Analyze about 8 frames locally (requires a low-resolution video download)'),
  'model': ('本机视觉语言模型', 'Local vision-language model'),
  'mode': ('语音识别运算', 'Speech recognition device'),

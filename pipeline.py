@@ -8,6 +8,7 @@ import re
 import tempfile
 from filelock import FileLock, Timeout
 from config import ROOT, OUTPUTS, configure_runtime, default_model, gpu_info
+from links import extract_url
 from storage import Task, guard
 from subtitles import chunks, stamp, to_srt
 from terminology import normalize_terms, verified_terms
@@ -18,6 +19,8 @@ def run(url, visual=False, model=None, whisper='small', mode='auto', progress=la
         language=DEFAULT_LANGUAGE, ui_language=None):
     validate_language(language)
     ui = validate_language(ui_language or language)
+    # Keep only the link from pasted share text; reports fall back to this as the source address.
+    url = extract_url(url)
     configure_runtime()
     from downloader import inspect, get_subtitles, download, metadata
     from frames import extract
