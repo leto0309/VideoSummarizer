@@ -48,17 +48,21 @@ def inspect(url, task):
     return info
 
 
+def clean_url(url):
+    """Preserve only playback selectors; remove shared-link tracking parameters and fragments."""
+    parsed = urlparse(url)
+    query = parse_qs(parsed.query)
+    keep = {k: query[k][0] for k in ('p', 'v') if k in query}
+    return urlunparse(parsed._replace(query=urlencode(keep), fragment=''))
+
+
 def metadata(info, original_url):
     fields = ('id', 'title', 'uploader', 'uploader_id', 'duration', 'upload_date', 'webpage_url',
               'extractor', 'description', 'chapters')
     data = {key: info.get(key) for key in fields}
-    # Preserve only playback selectors; remove shared-link tracking parameters.
     if data.get('webpage_url'):
-        parsed = urlparse(data['webpage_url'])
-        query = parse_qs(parsed.query)
-        keep = {k: query[k][0] for k in ('p', 'v') if k in query}
-        data['webpage_url'] = urlunparse(parsed._replace(query=urlencode(keep), fragment=''))
-    data['original_url'] = original_url
+        data['webpage_url'] = clean_url(data['webpage_url'])
+    data['original_url'] = clean_url(original_url)
     # Signed stream URLs and platform authentication data are intentionally not exported.
     return data
 

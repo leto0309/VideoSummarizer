@@ -49,7 +49,7 @@ class BookmarkTests(unittest.TestCase):
         process = Mock(pid=123)
         process.poll.return_value = 1
         browser = Mock()
-        with self.assertRaisesRegex(RuntimeError, '啟動器已退出'):
+        with self.assertRaisesRegex(RuntimeError, '启动器已退出'):
             link.open_on_demand(Mock(), Mock(return_value=process), browser)
         browser.assert_not_called()
 

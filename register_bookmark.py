@@ -25,30 +25,30 @@ def install():
     try:
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER, KEY):
             if existing_command() != COMMAND:
-                raise RuntimeError('videosummarizer 協議已被其他設定使用；未覆蓋。')
+                raise RuntimeError('videosummarizer 协议已被其他设置使用；未覆盖。')
     except FileNotFoundError:
         pass
     for file in (PYTHONW, ROOT / 'bookmark_launcher.py'):
         if not file.is_file():
-            raise RuntimeError('缺少必要檔案：' + str(file))
+            raise RuntimeError('缺少必要文件：' + str(file))
     with winreg.CreateKey(winreg.HKEY_CURRENT_USER, KEY) as key:
         winreg.SetValueEx(key, '', 0, winreg.REG_SZ, 'URL:VideoSummarizer')
         winreg.SetValueEx(key, 'URL Protocol', 0, winreg.REG_SZ, '')
     with winreg.CreateKey(winreg.HKEY_CURRENT_USER, COMMAND_KEY) as key:
         winreg.SetValueEx(key, '', 0, winreg.REG_SZ, COMMAND)
     assert existing_command() == COMMAND
-    print('已註冊目前 Windows 使用者的 videosummarizer://open 連結。')
+    print('已注册目前 Windows 用户的 videosummarizer://open 链接。')
 
 
 def remove():
     if existing_command() is None:
-        print('沒有本專案的協議註冊。')
+        print('没有本项目的协议注册。')
         return
     if existing_command() != COMMAND:
-        raise RuntimeError('協議已由其他設定接管；未刪除。')
+        raise RuntimeError('协议已由其他设置接管；未删除。')
     for key in (COMMAND_KEY, KEY + r'\shell\open', KEY + r'\shell', KEY):
         winreg.DeleteKey(winreg.HKEY_CURRENT_USER, key)
-    print('已移除本專案的連結註冊；模型及摘要檔案保留。')
+    print('已移除本项目的链接注册；模型及摘要文件保留。')
 
 
 if __name__ == '__main__':
@@ -58,7 +58,7 @@ if __name__ == '__main__':
         elif not sys.argv[1:]:
             install()
         else:
-            raise ValueError('只接受 --remove 或不帶參數。')
+            raise ValueError('只接受 --remove 或不带参数。')
     except Exception as exc:
-        print('註冊失敗：' + str(exc))
+        print('注册失败：' + str(exc))
         sys.exit(1)

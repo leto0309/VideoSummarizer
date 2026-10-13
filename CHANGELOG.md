@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.7 — 2026-10-14
+
+Add `update-ytdlp.bat`. When Bilibili or YouTube changes and downloads fail, it updates the bundled yt-dlp and yt-dlp-ejs from PyPI inside the application folder, or restores the versions tested with this release; it refuses to run while a summary task is active. The About section shows the installed yt-dlp version, and the readiness check accepts yt-dlp versions newer than the pin so an update does not trigger first-time setup again. The page now gives a GPU hint based on the computer: with an NVIDIA GPU and no GPU runtime it suggests `install-gpu.bat`; once the runtime is installed, speech recognition defaults to "Auto: CUDA → CPU".
+
+Small fixes: hard-coded Chinese messages in the launchers, setup and native window are now Simplified Chinese, with a test that keeps Traditional characters out. Saved source addresses keep only the `p` and `v` query parameters, dropping share tracking such as `vd_source`, `share_source` and `si`. Removing model-written timestamps no longer rewrites ratios and scores such as 16:9 or 3:1. Append-only logs are renamed to `.1` above 2 MB, keeping one previous copy. CPU speech recognition uses as many threads as the computer has cores, up to eight, instead of a fixed four.
+
 ## 0.3.6 — 2026-10-13
 
 The link field accepts text copied with a platform's share button, such as Bilibili's "【title】 https://www.bilibili.com/video/...". The first https:// link is taken from the pasted text and shown below the field before it is used; the HTTPS Bilibili / b23.tv / YouTube allowlist is unchanged, and only the first link is considered. Metadata and the report's source line keep only the link, not the pasted title.

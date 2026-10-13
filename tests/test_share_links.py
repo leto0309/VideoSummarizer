@@ -62,9 +62,11 @@ class ShareTextTests(unittest.TestCase):
             self.assertEqual(inspect.call_args.args[0], LINK)
             meta = json.loads((folder / 'metadata.json').read_text(encoding='utf-8'))
             report = (folder / 'summary.md').read_text(encoding='utf-8')
-            self.assertEqual(meta['original_url'], LINK)
-            self.assertIn(LINK, report)
+            # Saved addresses also drop the share tracking parameters.
+            self.assertEqual(meta['original_url'], 'https://www.bilibili.com/video/BV1nTcQzYEnc/')
+            self.assertIn('https://www.bilibili.com/video/BV1nTcQzYEnc/', report)
             self.assertNotIn('【', report)
+            self.assertNotIn('vd_source', report)
 
     def test_share_text_does_not_relax_the_allowlist(self):
         for text in ('【标题】 http://b23.tv/AbC123', '【标题】 https://b23.tv.evil.test/x',

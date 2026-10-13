@@ -24,7 +24,7 @@ class Launcher : Form {
         gpuMode = installGpu;
         Text = installGpu ? "VideoSummarizer - 可选 GPU 加速" : "VideoSummarizer"; Width = 780; Height = 500;
         StartPosition = FormStartPosition.CenterScreen;
-        status.Text = "正在檢查本機環境…"; status.Dock = DockStyle.Top; status.Height = 38;
+        status.Text = "正在检查本机环境…"; status.Dock = DockStyle.Top; status.Height = 38;
         output.Multiline = true; output.ReadOnly = true; output.ScrollBars = ScrollBars.Both;
         output.WordWrap = false; output.Dock = DockStyle.Fill;
         output.Font = new Font("Consolas", 10);
@@ -102,23 +102,23 @@ class Launcher : Form {
 
     void Begin() {
         try {
-            if (!File.Exists(Python)) throw new Exception("找不到內置 Python，請完整解壓 ZIP，保留 runtime 資料夾。");
+            if (!File.Exists(Python)) throw new Exception("找不到内置 Python，请完整解压 ZIP，保留 runtime 文件夹。");
             Directory.CreateDirectory(Path.Combine(root, "logs"));
             // Verify write access before downloading or starting background processes.
-            File.AppendAllText(Path.Combine(root, "logs", "desktop.log"), DateTime.Now.ToString("s") + " 啟動\n");
+            File.AppendAllText(Path.Combine(root, "logs", "desktop.log"), DateTime.Now.ToString("s") + " 启动\n");
             int code;
             using (var check = Process.Start(Command("--check"))) { check.WaitForExit(); code = check.ExitCode; }
-            if (code != 0 && code != 10) throw new Exception("環境檢查失敗，請完整重新解壓或查看日誌。");
+            if (code != 0 && code != 10) throw new Exception("环境检查失败，请完整重新解压或查看日志。");
             if (gpuMode && code == 10) throw new Exception("请先打开 VideoSummarizer.exe 完成首次配置，再运行 install-gpu.bat。");
             var consent = gpuMode ? "可选 GPU 加速将下载 CUDA 运行库，可能超过 1 GB，总时限 20 分钟。\n\n只安装到本软件文件夹。取消或失败后，CPU 模式仍可使用。请先等待摘要任务完成。\n\n是否允许下载？" :
                 "首次使用需下载尚未内置的免费依赖、工具与本机 AI 模型，建议预留 15 GB 空间。已内置的 Whisper / Ollama 会直接使用。\n\n默认跳过可选 CUDA 库，先使用 CPU 转录；GPU 加速可稍后通过 install-gpu.bat 单独安装。\n\n仅写入本软件文件夹，不安装系统 Python、不改全局 PATH，不使用付费 API 或 cloud。\n\n是否允许下载？";
             if ((code == 10 || gpuMode) && MessageBox.Show(this, consent,
                 Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) {
-                status.Text = "已取消首次配置，尚未下載。"; return;
+                status.Text = "已取消首次配置，尚未下载。"; return;
             }
             busy = true;
             canCancel = code == 10 || gpuMode; cancel.Enabled = canCancel;
-            status.Text = gpuMode ? "正在安装可选 GPU 加速，可随时取消…" : code == 10 ? "首次配置中，可查看下载进度或取消…" : "正在啟動本機服務…";
+            status.Text = gpuMode ? "正在安装可选 GPU 加速，可随时取消…" : code == 10 ? "首次配置中，可查看下载进度或取消…" : "正在启动本机服务…";
             worker = new Process(); worker.StartInfo = Command(gpuMode ? "--install-gpu" : code == 10 ? "--setup" : "");
             worker.EnableRaisingEvents = true;
             worker.OutputDataReceived += delegate(object s, DataReceivedEventArgs e) { Add(e.Data); };
@@ -130,8 +130,8 @@ class Launcher : Form {
                     if (installJob != IntPtr.Zero) { CloseHandle(installJob); installJob = IntPtr.Zero; }
                     cancel.Enabled = false;
                     status.Text = cancelled ? "已取消配置。现有模型和摘要保留，可稍后重新打开。" : worker.ExitCode == 0 ?
-                        (gpuMode ? "GPU 库安装完成，兼容性需通过转录确认。可关闭此窗口。" : "已開啟網頁，可關閉此視窗。背景服務會繼續運行。") :
-                        (gpuMode ? "GPU 安装未完成，仍可使用 CPU。请查看下方错误。" : "啟動失敗：請查看下方錯誤，修正後重新雙擊啟動。");
+                        (gpuMode ? "GPU 库安装完成，兼容性需通过转录确认。可关闭此窗口。" : "已打开网页，可关闭此窗口。背景服务会继续运行。") :
+                        (gpuMode ? "GPU 安装未完成，仍可使用 CPU。请查看下方错误。" : "启动失败：请查看下方错误，修正后重新双击启动。");
                     File.AppendAllText(Path.Combine(root, "logs", "desktop.log"), output.Text, Encoding.UTF8);
                     if (closeWhenDone) Close();
                 }));
@@ -139,7 +139,7 @@ class Launcher : Form {
             worker.Start();
             if (canCancel) installJob = CreateInstallerJob(worker);
             worker.BeginOutputReadLine(); worker.BeginErrorReadLine();
-        } catch (Exception exc) { busy = false; status.Text = "啟動失敗"; Add(exc.Message); }
+        } catch (Exception exc) { busy = false; status.Text = "启动失败"; Add(exc.Message); }
     }
 
     [STAThread] static int Main(string[] args) {

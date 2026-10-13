@@ -23,7 +23,7 @@ class StartupMutex:
         if status not in (0, 0x80):
             kernel.CloseHandle(self.handle)
             self.handle = None
-            raise RuntimeError('另一個配置或啟動正在進行；等待逾時，請稍後重試。')
+            raise RuntimeError('另一个配置或启动正在进行；等待超时，请稍后重试。')
         return self
 
     def __exit__(self, *args):

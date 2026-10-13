@@ -75,8 +75,9 @@ class LocalLLM:
             result = result.split('\n', 1)[-1].rsplit('```', 1)[0].strip()
         self.calls.append({'prompt_eval_count': data.get('prompt_eval_count'),
                            'eval_count': data.get('eval_count'), 'done_reason': data.get('done_reason')})
-        # Only program-generated, verified timestamps appear in the report.
-        result = re.sub(r'(?<!\d)\d{1,3}(?::\d{1,2}){1,2}(?:[.,]\d{1,3})?(?!\d)',
+        # Only program-generated, verified timestamps appear in the report. Times have two-digit
+        # seconds (1:23, 02:15, 1:02:03.500); ratios and scores such as 16:9 or 3:1 stay.
+        result = re.sub(r'(?<![\d:])\d{1,3}:\d{2}(?::\d{2})?(?:[.,]\d{1,3})?(?![\d:])',
                         tr(self.language, 'time_placeholder'), result)
         return normalize(result, self.language)
 

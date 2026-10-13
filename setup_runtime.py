@@ -43,7 +43,7 @@ def setup_ollama():
     archive = TOOLS / asset['name']
     TOOLS.mkdir(exist_ok=True)
     if shutil.disk_usage(ROOT).free < asset['size'] * 4 + 4 * 1024**3:
-        raise RuntimeError('可用空間不足，請至少保留約 10 GB 安裝空間')
+        raise RuntimeError('可用空间不足，请至少保留约 10 GB 安装空间')
     sums = fetch(assets['sha256sum.txt']['browser_download_url'], progress=progress)
     expected = next(line.split()[0] for line in sums.text.splitlines()
                     if Path(line.split()[-1].lstrip('*')).name == archive.name)
@@ -56,7 +56,7 @@ def setup_ollama():
         for entry in package.infolist():
             target = (destination / entry.filename).resolve()
             if not target.is_relative_to(destination.resolve()):
-                raise RuntimeError('拒絕含越界路徑的壓縮檔')
+                raise RuntimeError('拒绝含越界路径的压缩文件')
         package.extractall(destination)
     archive.unlink()  # exact project-owned installer only, never a model
 
@@ -88,7 +88,7 @@ def setup():
     try:
         ensure_model(progress=lambda message: print(message, flush=True))
     except ModelUnavailableError as exc:
-        print('警告：語音模型尚未完成；有字幕的影片仍可處理。', flush=True)
+        print('警告：语音模型尚未完成；有字幕的视频仍可处理。', flush=True)
         print(str(exc), flush=True)
 
 

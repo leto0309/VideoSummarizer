@@ -107,6 +107,7 @@ class WhisperModelTests(unittest.TestCase):
                                           'ctranslate2': SimpleNamespace()}):
                 speech._worker('audio.wav', str(root / 'transcript.json'), str(root / 'model'), 'cpu')
             self.assertTrue(factory.call_args.kwargs['local_files_only'])
+            self.assertEqual(factory.call_args.kwargs['cpu_threads'], speech.cpu_threads())
             self.assertEqual(factory.call_args.args[0], str(root / 'model'))
 
 
