@@ -55,7 +55,11 @@ class LockFileTests(unittest.TestCase):
                     self.assertEqual(entries[name][0], version, name)
         main = parse_lock(ROOT / 'requirements.lock')
         self.assertGreater(len(main), len(direct_pins(ROOT / 'requirements.txt')))  # transitive packages too
-        self.assertEqual(main['srt'], ('3.5.3', [SRT_SOURCE]))
+        version, hashes = main['srt']
+        self.assertEqual(version, '3.5.3')
+        # The portable package's copy also accepts the wheel its build made from this archive.
+        self.assertEqual(hashes[0], SRT_SOURCE)
+        self.assertLessEqual(len(hashes), 2)
 
     def test_generator_keeps_only_files_this_platform_can_install(self):
         supported = {Tag('cp311', 'cp311', 'win_amd64'), Tag('py3', 'none', 'any')}
