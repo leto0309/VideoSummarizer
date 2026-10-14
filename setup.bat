@@ -22,7 +22,7 @@ if not errorlevel 1 (
 if errorlevel 1 goto failed
 ".venv\Scripts\python.exe" -m pip install --no-cache-dir --upgrade pip
 if errorlevel 1 goto failed
-".venv\Scripts\python.exe" -m pip install --no-cache-dir -r requirements.txt
+".venv\Scripts\python.exe" -m pip install --no-cache-dir --require-hashes -r requirements.lock
 if errorlevel 1 goto failed
 ".venv\Scripts\python.exe" setup_runtime.py
 if errorlevel 1 goto failed

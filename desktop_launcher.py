@@ -69,7 +69,7 @@ def prepare():
         from install_support import install_requirements
         from network_check import explain
         try:
-            install_requirements(ROOT / 'requirements.txt', root=ROOT,
+            install_requirements(ROOT / 'requirements.lock', root=ROOT,
                                  progress=lambda message: print(message, flush=True))
         except (subprocess.CalledProcessError, TimeoutError, OSError) as exc:
             explain(exc, 'pypi')

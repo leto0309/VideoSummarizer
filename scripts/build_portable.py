@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import tempfile
 import urllib.request
 import zipfile
 
@@ -18,6 +19,22 @@ PYTHON_SHA256 = '4d307648d2fe5f8d927e10380cc33eb7afd8a34a7efe0ed786b5860b5f2d340
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from app_version import portable_record, validate_release_version
+
+
+def lock_block(text, name):
+    """The lines of one package in a lock file written by scripts/lock_requirements.py."""
+    lines = text.splitlines()
+    start = next(i for i, line in enumerate(lines) if line.startswith(name + '=='))
+    end = next((i for i in range(start + 1, len(lines)) if not lines[i].startswith(' ')), len(lines))
+    return lines[start:end]
+
+
+def add_hash(lock, name, digest):
+    """Let a locked package also accept the wheel this build made from its verified source archive."""
+    text = lock.read_text(encoding='utf-8')
+    block = lock_block(text, name)
+    extended = [*block[:-1], block[-1] + ' \\', f'    --hash=sha256:{digest}']
+    lock.write_text(text.replace('\n'.join(block) + '\n', '\n'.join(extended) + '\n', 1), encoding='utf-8')
 
 
 def build(version):
@@ -61,10 +78,17 @@ def build(version):
         # Every member is a validated regular file/directory; no links or devices.
         tar.extractall(package)
     (package / 'python').rename(package / 'runtime')
-    # srt is only published as a source archive. Build its MIT-licensed pure
-    # Python wheel here so first-run setup needs no source extraction/build.
-    subprocess.run([sys.executable, '-m', 'pip', 'wheel', '--no-cache-dir', '--no-deps',
-                    '--wheel-dir', str(package / 'wheels'), 'srt==3.5.3'], check=True)
+    # srt is only published as a source archive. Build its MIT-licensed pure Python wheel from
+    # the archive whose SHA256 the lock lists, so first-run setup needs no source build, and
+    # let the packaged lock accept that wheel too.
+    lock = package / 'requirements.lock'
+    with tempfile.TemporaryDirectory() as folder:
+        pin = Path(folder) / 'srt.txt'
+        pin.write_text('\n'.join(lock_block(lock.read_text(encoding='utf-8'), 'srt')) + '\n', encoding='utf-8')
+        subprocess.run([sys.executable, '-m', 'pip', 'wheel', '--no-cache-dir', '--no-deps', '--require-hashes',
+                        '--wheel-dir', str(package / 'wheels'), '-r', str(pin)], check=True)
+    wheel = next((package / 'wheels').glob('srt-*.whl'))
+    add_hash(lock, 'srt', hashlib.sha256(wheel.read_bytes()).hexdigest())
     compiler = Path(os.environ['WINDIR']) / 'Microsoft.NET' / 'Framework64' / 'v4.0.30319' / 'csc.exe'
     subprocess.run([str(compiler), '/nologo', '/target:winexe', '/platform:x64',
                     '/r:System.Windows.Forms.dll', '/r:System.Drawing.dll',

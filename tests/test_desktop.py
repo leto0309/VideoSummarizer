@@ -21,7 +21,7 @@ class DesktopTests(unittest.TestCase):
                  patch('install_support.install_requirements', side_effect=subprocess.CalledProcessError(1, 'pip')) as run:
                 with self.assertRaises(subprocess.CalledProcessError):
                     desktop.prepare()
-                self.assertEqual(run.call_args.args[0], root / 'requirements.txt')
+                self.assertEqual(run.call_args.args[0], root / 'requirements.lock')
                 self.assertFalse((root / 'ready.json').exists())
 
     def test_ready_requires_tools_and_marker(self):

@@ -43,7 +43,7 @@ jobs:
           New-Item -ItemType Directory -Path $env:TEMP -Force | Out-Null
           & $python -s "$bundle/desktop_launcher.py" --check
           if ($LASTEXITCODE -ne 10) { throw 'Fresh bundle must request setup' }
-          & $python -m pip install --no-cache-dir --only-binary=:all: --find-links "$bundle/wheels" -r "$bundle/requirements.txt"
+          & $python -m pip install --no-cache-dir --require-hashes --only-binary=:all: --find-links "$bundle/wheels" -r "$bundle/requirements.lock"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Push-Location $bundle
           & $python -m unittest discover -s tests -v
@@ -71,7 +71,7 @@ jobs:
           $python = Join-Path $bundle 'runtime/python.exe'
           $env:TEMP = $env:TMP = Join-Path $bundle 'tools/install-temp'
           New-Item -ItemType Directory -Path $env:TEMP -Force | Out-Null
-          & $python -m pip install --no-cache-dir --only-binary=:all: --find-links "$bundle/wheels" -r "$bundle/requirements.txt"
+          & $python -m pip install --no-cache-dir --require-hashes --only-binary=:all: --find-links "$bundle/wheels" -r "$bundle/requirements.lock"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Push-Location $bundle
           $env:HF_HUB_OFFLINE = '1'
@@ -131,7 +131,7 @@ jobs:
           $python = Join-Path $bundle 'runtime/python.exe'
           $env:TEMP = $env:TMP = Join-Path $bundle 'tools/install-temp'
           New-Item -ItemType Directory -Path $env:TEMP -Force | Out-Null
-          & $python -m pip install --no-cache-dir --only-binary=:all: --find-links "$bundle/wheels" -r "$bundle/requirements.txt"
+          & $python -m pip install --no-cache-dir --require-hashes --only-binary=:all: --find-links "$bundle/wheels" -r "$bundle/requirements.lock"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Push-Location $bundle
           & $python scripts/verify_ollama_bundle.py $bundle
