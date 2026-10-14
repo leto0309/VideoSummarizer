@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.9 — 2026-10-14
+
+Every dependency is now locked with hashes. `requirements.lock` pins all 61 packages of the main install, including the transitive ones that previously resolved to whatever was newest on the day of setup, and `requirements-gpu.lock` pins the 3 optional CUDA packages. Each package lists the SHA256 of its PyPI files for Windows x64 / CPython 3.11. First-time setup, `setup.bat`, GPU installation, the yt-dlp restore and CI install them with `--require-hashes`, so pip refuses any file that was not tested. The portable build makes the srt wheel from its hash-verified source archive and adds the wheel's hash to the packaged lock. `scripts/lock_requirements.py` regenerates the locks from `requirements.txt` and `requirements-gpu.txt`. A clean source install and a locally built portable package both completed a real first-time setup and summary with the locks.
+
+The yt-dlp updater's completion message now says whether it updated or restored, and restore also returns any dependency the update changed to its locked version. It still asks to restart the computer, because closing the page does not stop the background service.
+
+The frame and timeline prompts ask for plain text without headings. In a real run the 2B model still began its frame notes with "# 画面描述", so the report cleanup added in 0.3.8 remains what keeps the outline intact.
+
+CI also runs ruff for errors such as undefined names and unused imports; this does not change the application.
+
 ## 0.3.8 — 2026-10-14
 
 When a platform answers without any downloadable audio or video, the page now says so and explains what to do instead of showing the generic "check your network, local model and file permissions" message. Testing v0.3.7 found that Bilibili's risk control sometimes answers anonymous requests this way. The message says to try again later, run `update-ytdlp.bat` if it keeps failing, and that the tool never logs in or bypasses platform limits. The README FAQ has a matching entry. The Traditional Chinese wording avoids an OpenCC mis-conversion.
