@@ -92,8 +92,9 @@ def run_installer(command, *, timeout, root=None, progress=print):
 
 
 def install_requirements(requirements, *, timeout=2700, root=None, progress=print):
+    """Install a lock file: every package pinned, and pip refuses files whose SHA256 is not listed."""
     root = Path(root or ROOT)
-    command = [sys.executable, '-m', 'pip', 'install', '--only-binary=:all:',
+    command = [sys.executable, '-m', 'pip', 'install', '--require-hashes', '--only-binary=:all:',
                '--progress-bar', 'raw', '--no-warn-script-location', '--disable-pip-version-check',
                '--timeout', '30', '--retries', '2', '--resume-retries', '2',
                '--cache-dir', str(root / 'tools/pip-cache'),

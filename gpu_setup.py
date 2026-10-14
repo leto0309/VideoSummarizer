@@ -31,7 +31,7 @@ def install_gpu(progress=print):
             progress('可选 Whisper GPU 加速：将下载 CUDA 运行库，可能超过 1 GB；总时限 20 分钟。')
             progress('可在窗口取消安装；取消或失败后，原有 CPU 模式仍可使用。')
             try:
-                install_requirements(ROOT / 'requirements-gpu.txt', timeout=1200, root=ROOT,
+                install_requirements(ROOT / 'requirements-gpu.lock', timeout=1200, root=ROOT,
                                      progress=progress)
             except (subprocess.CalledProcessError, TimeoutError, OSError) as exc:
                 progress('GPU 加速库未安装完成，CPU int8 模式仍可使用。详情请查看 logs/install.log。')

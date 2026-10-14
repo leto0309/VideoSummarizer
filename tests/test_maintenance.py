@@ -51,11 +51,11 @@ class YtDlpUpdateTests(unittest.TestCase):
         self.assertIn(str(ROOT / 'tools/pip-cache'), command)
         self.assertEqual(call.kwargs['timeout'], 600)
 
-    def test_restore_installs_the_tested_pins(self):
+    def test_restore_reinstalls_the_hashed_lock(self):
         command = self.run_update(restore=True).args[0]
         self.assertNotIn('--upgrade', command)
-        self.assertIn(f'yt-dlp[default]=={PINNED["yt-dlp"]}', command)
-        self.assertIn(f'yt-dlp-ejs=={PINNED["yt-dlp-ejs"]}', command)
+        self.assertIn('--require-hashes', command)
+        self.assertEqual(command[-2:], ['-r', str(ROOT / 'requirements.lock')])
 
     def test_update_waits_for_running_summary_and_names_pypi_on_failure(self):
         from filelock import FileLock

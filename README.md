@@ -142,7 +142,7 @@ B 站有时会暂时限制未登录的访问，这时同一个视频也拿不到
 
 ```powershell
 py -3.11 -m venv .venv
-.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe -m pip install --require-hashes -r requirements.lock
 .venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
