@@ -82,16 +82,27 @@ class AppVersionTests(unittest.TestCase):
         # Edition notes prepended to packaged README files have no level-2 headings.
         headings = {name: next(line for line in (ROOT / name).read_text(encoding='utf-8').splitlines()
                                if line.startswith('## '))
-                    for name in ('CHANGELOG.md', 'README.md')}
+                    for name in ('CHANGELOG.md', 'README.md', 'README.en.md')}
         self.assertTrue(headings['CHANGELOG.md'].startswith(f'## {VERSION} '), headings['CHANGELOG.md'])
         self.assertTrue(headings['README.md'].startswith(f'## {RELEASE_TAG}：'), headings['README.md'])
+        self.assertTrue(headings['README.en.md'].startswith(f'## {RELEASE_TAG}: '), headings['README.en.md'])
+        english = (ROOT / 'README.en.md').read_text(encoding='utf-8')
+        self.assertIn(f'releases/download/{RELEASE_TAG}/VideoSummarizer-{RELEASE_TAG}-', english)
 
     def test_readme_keeps_earlier_release_notes_under_history(self):
-        sections = [line for line in (ROOT / 'README.md').read_text(encoding='utf-8').splitlines()
-                    if line.startswith('## ')]
-        # Only the running release is a top-level section; older notes must not read as current steps.
-        self.assertEqual([line for line in sections if line.startswith('## v')], [sections[0]])
-        self.assertEqual(sections[-1], '## 历史版本说明')
+        for name, history in (('README.md', '## 历史版本说明'), ('README.en.md', '## Release history')):
+            with self.subTest(readme=name):
+                sections = [line for line in (ROOT / name).read_text(encoding='utf-8').splitlines()
+                            if line.startswith('## ')]
+                # Only the running release is a top-level section; older notes must not read as current steps.
+                self.assertEqual([line for line in sections if line.startswith('## v')], [sections[0]])
+                self.assertEqual(sections[-1], history)
+
+    def test_readmes_link_to_each_other(self):
+        self.assertIn('[English](README.en.md)', (ROOT / 'README.md').read_text(encoding='utf-8'))
+        english = (ROOT / 'README.en.md').read_text(encoding='utf-8')
+        self.assertIn('[简体中文](README.md)', english)
+        self.assertIn('[CHANGELOG.md](CHANGELOG.md)', english)
 
     def test_three_language_page_shows_version_and_about_without_network(self):
         with patch('config.gpu_info', return_value={'name': 'Test GPU', 'vram_mib': 4000, 'driver': None}), \
