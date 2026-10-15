@@ -4,15 +4,15 @@
 
 Windows 免费本机视频摘要工具：Bilibili / b23.tv / YouTube、字幕优先、可选画面分析。语音识别和摘要都在本机运行，不使用付费 API 或 Ollama cloud。
 
-## v0.3.9：首次配置装到的每个包都经过测试和校验
+## v0.3.10：首次配置可选择简体中文、繁體中文或 English
 
-建议下载 [v0.3.9 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.9/VideoSummarizer-v0.3.9-windows-x64-with-whisper-ollama.zip)，完整解压到新的可写入文件夹。停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。页面标题下会显示 `VideoSummarizer · 当前运行版本：v0.3.9`。
+建议下载 [v0.3.10 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.10/VideoSummarizer-v0.3.10-windows-x64-with-whisper-ollama.zip)，完整解压到新的可写入文件夹。停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。页面标题下会显示 `VideoSummarizer · 当前运行版本：v0.3.10`。
 
-首次配置会从 PyPI 下载 Python 依赖。以前只固定了 9 个直接依赖的版本，它们带进来的其他包会装当天的最新版，上游一改版就可能装不上。现在全部 61 个包都固定在测试过的版本，并核对每个文件的 SHA256，对不上就拒绝安装；可选 GPU 加速的 3 个包也一样。
+首次配置窗口新增语言选择：简体中文（默认）、繁體中文或 English，切换后窗口文字马上改变。选择会保存为网页语言；之后的配置进度、网络检查、GPU 加速、yt-dlp 更新、Whisper 下载和启动提示也都使用这个语言，在网页上改语言后同样跟着变。以前这些提示只有简体中文。
 
-`update-ytdlp.bat` 完成后会写明是「已更新」还是「已恢复」；「恢复」会把 yt-dlp 和被更新改动过的依赖一起装回测试过的版本。
+另外新增英文版说明 [README.en.md](README.en.md)。
 
-保留 v0.3.8 的 B 站暂时拿不到视频时的明确提示与报告格式整理、v0.3.7 的 `update-ytdlp.bat` 与 GPU 加速提示、v0.3.6 的分享文字链接识别、v0.3.5 的网络检查（`check-network.bat`）与断点续传，以及 CPU int8 默认设置、首次配置跳过 CUDA 和独立 `install-gpu.bat`。内含 Whisper + Ollama 版仍需首次同意后联网下载其他 Python 依赖、Node.js 与 Qwen 摘要模型，不是完全离线包。升级方法见下方「升级」。
+保留 v0.3.9 的全部依赖锁定与哈希校验、v0.3.8 的 B 站暂时拿不到视频时的明确提示与报告格式整理、v0.3.7 的 `update-ytdlp.bat` 与 GPU 加速提示、v0.3.6 的分享文字链接识别、v0.3.5 的网络检查（`check-network.bat`）与断点续传，以及 CPU int8 默认设置、首次配置跳过 CUDA 和独立 `install-gpu.bat`。内含 Whisper + Ollama 版仍需首次同意后联网下载其他 Python 依赖、Node.js 与 Qwen 摘要模型，不是完全离线包。升级方法见下方「升级」。
 
 以下是当前版本的使用说明。各版本发布时的说明集中在文末「历史版本说明」，只适用于当时的版本。
 
@@ -161,6 +161,16 @@ Ollama cloud 已禁用；字幕和画面只发送到项目自己的本机 Ollama
 ## 历史版本说明
 
 以下是各版本发布时的说明，原文保留作为记录，只适用于当时的版本。其中「自动安装 CUDA」「下载 source.zip 覆盖旧目录」等做法已不再适用；当前步骤以上方说明为准。
+
+### v0.3.9：首次配置装到的每个包都经过测试和校验
+
+建议下载 [v0.3.9 内含 Whisper + Ollama 版](https://github.com/leto0309/VideoSummarizer/releases/download/v0.3.9/VideoSummarizer-v0.3.9-windows-x64-with-whisper-ollama.zip)，完整解压到新的可写入文件夹。停止旧版服务或重启 Windows 后，双击 `VideoSummarizer.exe`。页面标题下会显示 `VideoSummarizer · 当前运行版本：v0.3.9`。
+
+首次配置会从 PyPI 下载 Python 依赖。以前只固定了 9 个直接依赖的版本，它们带进来的其他包会装当天的最新版，上游一改版就可能装不上。现在全部 61 个包都固定在测试过的版本，并核对每个文件的 SHA256，对不上就拒绝安装；可选 GPU 加速的 3 个包也一样。
+
+`update-ytdlp.bat` 完成后会写明是「已更新」还是「已恢复」；「恢复」会把 yt-dlp 和被更新改动过的依赖一起装回测试过的版本。
+
+保留 v0.3.8 的 B 站暂时拿不到视频时的明确提示与报告格式整理、v0.3.7 的 `update-ytdlp.bat` 与 GPU 加速提示、v0.3.6 的分享文字链接识别、v0.3.5 的网络检查（`check-network.bat`）与断点续传，以及 CPU int8 默认设置、首次配置跳过 CUDA 和独立 `install-gpu.bat`。内含 Whisper + Ollama 版仍需首次同意后联网下载其他 Python 依赖、Node.js 与 Qwen 摘要模型，不是完全离线包。升级方法见下方「升级」。
 
 ### v0.3.8：B 站暂时拿不到视频时给出明确提示
 
