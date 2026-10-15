@@ -79,7 +79,9 @@ class YtDlpUpdateTests(unittest.TestCase):
     def test_batch_file_runs_the_updater_with_the_bundled_python(self):
         script = (ROOT / 'update-ytdlp.bat').read_text(encoding='utf-8')
         self.assertIn('runtime\\python.exe', script)
-        self.assertIn('ytdlp_update.py --restore', script)
+        # The update / restore menu is asked by Python, in the page language.
+        self.assertIn('ytdlp_update.py --ask', script)
+        self.assertNotIn('choice /c', script)
 
 
 def page(vram, cuda_runtime):

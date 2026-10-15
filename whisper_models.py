@@ -8,6 +8,7 @@ import sys
 import traceback
 from config import MODELS, ROOT
 from logfiles import rotate
+from setup_text import t
 
 REPO = 'Systran/faster-whisper-small'
 
@@ -35,7 +36,7 @@ def complete(folder):
 
 def cached_model(model='small'):
     if model != 'small':
-        raise ValueError('目前模型准备功能支持 Whisper small。')
+        raise ValueError(t('whisper_small_only'))
     base = MODELS / 'whisper'
     # Flat folder supports offline transfer without cache symlinks or metadata.
     if complete(base / model):
@@ -72,7 +73,7 @@ def ensure_model(model='small', progress=lambda message: None):
         os.environ['HF_HUB_DISABLE_IMPLICIT_TOKEN'] = '1'
         os.environ.setdefault('HF_HUB_ETAG_TIMEOUT', '30')
         os.environ.setdefault('HF_HUB_DOWNLOAD_TIMEOUT', '120')
-        progress('下载 Whisper small（约 464 MiB）；来源：huggingface.co，完成后可离线转录。')
+        progress(t('whisper_downloading'))
         try:
             from huggingface_hub import snapshot_download
             folder = Path(snapshot_download(
@@ -81,22 +82,14 @@ def ensure_model(model='small', progress=lambda message: None):
                                 'tokenizer.json', 'vocabulary.*'],
                 max_workers=2, etag_timeout=30))
             if not complete(folder):
-                raise RuntimeError('下载的模型缺少必要文件，请重试。')
+                raise RuntimeError(t('whisper_missing_files'))
             return folder
         except Exception as exc:
             logs = ROOT / 'logs'
             logs.mkdir(exist_ok=True)
             with rotate(logs / 'whisper-download.log').open('a', encoding='utf-8') as handle:
                 traceback.print_exc(file=handle)
-            raise ModelUnavailableError(
-                'Whisper small 模型尚未准备完成：下载失败或 Hugging Face 连接超时。'
-                '\n这不是 CUDA/CPU 运算错误，切换 CPU 不会修复模型下载。'
-                '\n请检查能否开启 https://huggingface.co/Systran/faster-whisper-small，'
-                '再执行 prepare-whisper.bat 重试。'
-                '\n无法连接时，可从另一台已完成下载的电脑复制 models/whisper，'
-                '或将官方模型必要文件放到 models/whisper/small。'
-                '\n详细原因记录于 logs/whisper-download.log；已下载的文件会保留。'
-            ) from exc
+            raise ModelUnavailableError(t('whisper_unavailable')) from exc
 
 
 def main():
@@ -105,11 +98,11 @@ def main():
     args = parser.parse_args()
     if args.check:
         folder = cached_model()
-        print('Whisper small 已准备完成。' if folder else 'Whisper small 尚未准备完成。')
+        print(t('whisper_ready') if folder else t('whisper_not_ready'))
         return 0 if folder else 1
     try:
         folder = ensure_model(progress=lambda message: print(message, flush=True))
-        print(f'Whisper small 已准备完成：{folder}', flush=True)
+        print(t('whisper_ready_at', folder=folder), flush=True)
         return 0
     except ModelUnavailableError as exc:
         print(str(exc), file=sys.stderr)

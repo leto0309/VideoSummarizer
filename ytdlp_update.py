@@ -6,6 +6,8 @@ from pathlib import Path
 import subprocess
 import sys
 
+from setup_text import t
+
 ROOT = Path(__file__).resolve().parent
 LOCK = ROOT / '.pipeline.lock'
 
@@ -14,7 +16,7 @@ def installed():
     try:
         return importlib.metadata.version('yt-dlp')
     except importlib.metadata.PackageNotFoundError:
-        return '未安装'
+        return t('not_installed')
 
 
 def update(restore=False, progress=print):
@@ -28,7 +30,7 @@ def update(restore=False, progress=print):
     try:
         with FileLock(str(LOCK), timeout=0):
             before = installed()
-            progress('恢复本版本测试过的 yt-dlp 及其依赖……' if restore else '从 PyPI 更新 yt-dlp 到最新版本……')
+            progress(t('ytdlp_restoring') if restore else t('ytdlp_updating'))
             try:
                 if restore:
                     # Also returns any dependency the update changed to its locked version.
@@ -40,21 +42,42 @@ def update(restore=False, progress=print):
                 explain(error, 'pypi')
                 raise
             # Closing the page leaves the background service running; restarting Windows stops it.
-            progress(f'yt-dlp {"已恢复" if restore else "已更新"}：{before} → {installed()}。'
-                     '正在运行的网页仍在使用更改前的版本，请重启电脑后再打开 VideoSummarizer，更改才会生效。')
+            progress(t('ytdlp_restored' if restore else 'ytdlp_updated', before=before, after=installed()))
     except Timeout as exc:
-        raise RuntimeError('摘要任务正在运行，请等待完成后再更新下载组件。') from exc
+        raise RuntimeError(t('ytdlp_busy')) from exc
+
+
+def ask(read=input, show=print):
+    """The menu update-ytdlp.bat shows, in the page language. Returns 'U', 'R' or 'C'."""
+    for key in ('ytdlp_intro', 'ytdlp_choice_update', 'ytdlp_choice_restore'):
+        show(t(key))
+    show(t('ytdlp_current', version=installed()))
+    while True:
+        try:
+            choice = read(t('ytdlp_prompt')).strip().upper()
+        except EOFError:
+            return 'C'
+        if choice in ('U', 'R', 'C'):
+            return choice
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--restore', action='store_true')
+    parser.add_argument('--ask', action='store_true')
     args = parser.parse_args()
     os.environ['PYTHONIOENCODING'] = 'utf-8'
+    restore = args.restore
+    if args.ask:
+        choice = ask()
+        if choice == 'C':
+            print(t('ytdlp_cancelled'), flush=True)
+            sys.exit(1)
+        restore = choice == 'R'
     try:
-        update(args.restore, progress=lambda message: print(message, flush=True))
+        update(restore, progress=lambda message: print(message, flush=True))
     except Exception as exc:
-        print(f'未完成：{exc}', flush=True)
+        print(t('unfinished', error=exc), flush=True)
         for note in getattr(exc, '__notes__', []):
             print(note, flush=True)
         sys.exit(1)

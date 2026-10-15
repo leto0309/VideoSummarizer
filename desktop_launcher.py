@@ -10,6 +10,7 @@ import sys
 import traceback
 
 from logfiles import rotate
+from setup_text import LANGUAGES, save_language, t
 
 ROOT = Path(__file__).resolve().parent
 READY = ROOT / 'portable-ready.json'
@@ -64,7 +65,7 @@ def needed_sources():
 
 
 def prepare():
-    print('首次配置：正在安装视频与 AI 依赖，可能需要数 GB 下载与空间。', flush=True)
+    print(t('setup_start'), flush=True)
     if not dependencies_ready():
         from install_support import install_requirements
         from network_check import explain
@@ -77,7 +78,7 @@ def prepare():
     from setup_runtime import setup
     setup()
     READY.write_text(json.dumps({'version': 1}), encoding='utf-8')
-    print('首次配置完成。', flush=True)
+    print(t('setup_done'), flush=True)
 
 
 def self_test():
@@ -125,6 +126,8 @@ def main():
     parser.add_argument('--self-test', action='store_true')
     parser.add_argument('--check', action='store_true')
     parser.add_argument('--install-gpu', action='store_true')
+    # Chosen in the native first-run window; saved as the page language before any download.
+    parser.add_argument('--language', choices=LANGUAGES)
     args = parser.parse_args()
     # The native window appends its whole output to desktop.log on every start.
     rotate(ROOT / 'logs' / 'desktop.log')
@@ -135,12 +138,14 @@ def main():
         sys.exit(10 if needs_setup() else 0)
     if args.install_gpu:
         if needs_setup():
-            raise RuntimeError('请先打开 VideoSummarizer.exe 完成首次配置，再安装可选 GPU 加速。')
+            raise RuntimeError(t('gpu_needs_setup'))
         from startup_lock import StartupMutex
         from gpu_setup import install_gpu
         with StartupMutex():
             install_gpu(progress=lambda message: print(message, flush=True))
         return
+    if args.setup and args.language:
+        save_language(args.language)
     if args.setup:
         from startup_lock import StartupMutex
         with StartupMutex():
@@ -149,15 +154,15 @@ def main():
                 check(needed=needed_sources())
                 prepare()
     if needs_setup():
-        raise RuntimeError('需要首次配置，请重新打开 VideoSummarizer.exe 并同意下载。')
+        raise RuntimeError(t('needs_setup'))
     from bookmark_launcher import StartupMutex, open_on_demand, launch_service, open_chrome
     import requests
     session = requests.Session()
     session.trust_env = False
     with StartupMutex():
-        print('正在启动本机服务；初始化可能需要约两分钟。', flush=True)
+        print(t('starting_service'), flush=True)
         open_on_demand(session, launch_service, open_chrome)
-    print('网页已打开。关闭进度窗口不会停止背景服务。', flush=True)
+    print(t('page_opened'), flush=True)
 
 
 if __name__ == '__main__':

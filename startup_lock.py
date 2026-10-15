@@ -3,6 +3,7 @@ import ctypes
 from ctypes import wintypes
 import hashlib
 from config import ROOT
+from setup_text import t
 
 
 class StartupMutex:
@@ -23,7 +24,7 @@ class StartupMutex:
         if status not in (0, 0x80):
             kernel.CloseHandle(self.handle)
             self.handle = None
-            raise RuntimeError('另一个配置或启动正在进行；等待超时，请稍后重试。')
+            raise RuntimeError(t('startup_busy'))
         return self
 
     def __exit__(self, *args):

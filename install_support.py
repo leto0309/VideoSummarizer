@@ -10,6 +10,7 @@ import threading
 import time
 
 from logfiles import rotate
+from setup_text import t
 
 ROOT = Path(__file__).resolve().parent
 
@@ -62,7 +63,7 @@ def run_installer(command, *, timeout, root=None, progress=print):
                 now = time.monotonic()
                 if now - started >= timeout:
                     stop_process(process)
-                    raise TimeoutError(f'安装超过 {timeout / 60:g} 分钟总时限，已停止本次安装；已有模型和摘要保留。')
+                    raise TimeoutError(t('install_timeout', minutes=timeout / 60))
                 try:
                     line = lines.get(timeout=.25)
                 except queue.Empty:
@@ -76,11 +77,11 @@ def run_installer(command, *, timeout, root=None, progress=print):
                     if match:
                         current, total = map(int, match.groups())
                         percent = f' ({current / total:.1%})' if total else ''
-                        line = f'下载进度：{current / 1024**2:.1f} / {total / 1024**2:.1f} MiB{percent}'
+                        line = t('download_progress', current=current / 1024**2, total=total / 1024**2, percent=percent)
                     progress(line)
                     notice = time.monotonic()
                 if now - notice >= 15:
-                    progress(f'安装仍在运行，已等待 {now-started:.0f} 秒；总时限 {timeout/60:g} 分钟。')
+                    progress(t('install_waiting', seconds=now - started, minutes=timeout / 60))
                     notice = now
             return process.wait()
     except BaseException:
@@ -116,7 +117,7 @@ def fetch(url, *, attempts=3, timeout=30, session=None, sleep=time.sleep, progre
         except requests.RequestException:
             if attempt == attempts:
                 raise
-            progress(f'连接失败，{5 * attempt} 秒后重试（第 {attempt + 1}/{attempts} 次）：{url}')
+            progress(t('fetch_retry', delay=5 * attempt, attempt=attempt + 1, attempts=attempts, url=url))
             sleep(5 * attempt)
 
 
@@ -148,14 +149,14 @@ def download_file(url, target, *, sha256, size=None, attempts=4, session=None, s
                         handle.write(chunk)
                         if handle.tell() - noticed >= 50 * 1024**2:
                             noticed = handle.tell()
-                            progress(f'已下载 {noticed / 1024**2:.0f} MiB：{target.name}')
+                            progress(t('downloaded', mib=noticed / 1024**2, name=target.name))
             break
         except requests.RequestException:
             if attempt == attempts:
                 raise
             done = partial.stat().st_size if partial.is_file() else 0
-            progress(f'下载中断，{5 * attempt} 秒后从已下载的 {done / 1024**2:.1f} MiB 继续'
-                     f'（第 {attempt + 1}/{attempts} 次）：{target.name}')
+            progress(t('download_resume', delay=5 * attempt, mib=done / 1024**2, attempt=attempt + 1, attempts=attempts,
+                       name=target.name))
             sleep(5 * attempt)
     digest = hashlib.sha256()
     with partial.open('rb') as handle:
@@ -163,6 +164,6 @@ def download_file(url, target, *, sha256, size=None, attempts=4, session=None, s
             digest.update(chunk)
     if digest.hexdigest() != sha256:
         partial.unlink()
-        raise RuntimeError(f'{target.name} 的 SHA256 与官方记录不一致，已删除未完成的下载，请重试。')
+        raise RuntimeError(t('sha_mismatch', name=target.name))
     partial.replace(target)
     return target
