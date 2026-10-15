@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.10 — 2026-10-15
+
+The first-time setup window now lets you choose Simplified Chinese (the default), Traditional Chinese or English, and switching updates the window at once. The choice is saved as the page language. Setup progress, the network check, the GPU, yt-dlp and Whisper installers and the launchers all use it, as does the web page; changing the page language later changes them too. Their messages come from a new standard-library-only table, so they work before OpenCC is installed, and the Traditional Chinese text equals the page's own OpenCC conversion. The `update-ytdlp.bat` menu and the source edition's `install-gpu.bat` prompt moved into Python, so they follow the language.
+
+Add README.en.md, an English README for the current version that links to this changelog for earlier releases. Both READMEs link to each other.
+
 ## 0.3.9 — 2026-10-14
 
 Every dependency is now locked with hashes. `requirements.lock` pins all 61 packages of the main install, including the transitive ones that previously resolved to whatever was newest on the day of setup, and `requirements-gpu.lock` pins the 3 optional CUDA packages. Each package lists the SHA256 of its PyPI files for Windows x64 / CPython 3.11. First-time setup, `setup.bat`, GPU installation, the yt-dlp restore and CI install them with `--require-hashes`, so pip refuses any file that was not tested. The portable build makes the srt wheel from its hash-verified source archive and adds the wheel's hash to the packaged lock. `scripts/lock_requirements.py` regenerates the locks from `requirements.txt` and `requirements-gpu.txt`. A clean source install and a locally built portable package both completed a real first-time setup and summary with the locks.
