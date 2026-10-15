@@ -1,5 +1,7 @@
 # VideoSummarizer
 
+简体中文 | [English](README.en.md)
+
 Windows 免费本机视频摘要工具：Bilibili / b23.tv / YouTube、字幕优先、可选画面分析。语音识别和摘要都在本机运行，不使用付费 API 或 Ollama cloud。
 
 ## v0.3.9：首次配置装到的每个包都经过测试和校验
