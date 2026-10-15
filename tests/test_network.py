@@ -112,14 +112,13 @@ class NetworkCheckTests(unittest.TestCase):
 
     def test_summary_marks_needed_sites_and_writes_report(self):
         with local_server(site_handler()) as base, tempfile.TemporaryDirectory() as folder, \
-             patch.dict(network_check.SOURCES, {'pypi': ('PyPI', 'Python 依赖', (base + '/',)),
-                                                'node': ('Node.js 官网', 'Node.js', (closed_port_url(),))}, clear=True):
+             patch.dict(network_check.SOURCES, {'pypi': (base + '/',), 'node': (closed_port_url(),)}, clear=True):
             lines = []
             network_check.check(['pypi', 'node'], needed=['node'], progress=lines.append,
                                 timeout=5, opener=offline_opener(), root=folder)
             report = json.loads((Path(folder) / 'logs/network-check.json').read_text(encoding='utf-8'))
         text = '\n'.join(lines)
-        self.assertRegex(text, r'- PyPI：可以连接（[\d.]+ 秒），用于下载 Python 依赖（本次不需要）')
+        self.assertRegex(text, r'- PyPI：可以连接（[\d.]+ 秒），用于下载 Python 依赖、FFmpeg 和可选 CUDA 运行库（本次不需要）')
         self.assertRegex(text, r'- Node\.js 官网：无法连接：127\.0\.0\.1 连接被拒绝，用于下载 Node\.js（本次配置需要）')
         self.assertEqual(report['needed'], ['node'])
         self.assertEqual([row['reachable'] for row in report['results']], [True, False])

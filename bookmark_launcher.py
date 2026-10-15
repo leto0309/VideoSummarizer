@@ -16,6 +16,7 @@ import requests
 from launcher import owned_process
 from config import PYTHON
 from logfiles import rotate
+from setup_text import t
 
 ROOT = Path(__file__).resolve().parent
 WEB_URL = 'http://127.0.0.1:8501/'
@@ -27,7 +28,7 @@ def validate_uri(value):
     parsed = urlsplit(value)
     if (parsed.scheme != 'videosummarizer' or parsed.netloc != 'open'
             or parsed.path not in ('', '/') or parsed.query or parsed.fragment):
-        raise ValueError('只接受 videosummarizer://open，不接受视频网址或其他指令。')
+        raise ValueError(t('bm_only_open'))
 
 
 def log(message):
@@ -63,10 +64,10 @@ def services_ready(session):
     web = healthy(session, WEB_URL + '_stcore/health')
     ollama = healthy(session, OLLAMA_URL + '/api/version')
     if web and not project_process(ROOT / 'logs' / 'streamlit.pid', PYTHON):
-        raise RuntimeError('8501 端口的服务无法确认属于本项目；请查看现有进程。')
+        raise RuntimeError(t('bm_port_8501'))
     if ollama and not project_process(ROOT / 'logs' / 'ollama-owner.json',
                                      ROOT / 'tools' / 'ollama' / 'ollama.exe', True):
-        raise RuntimeError('11435 端口的服务无法确认属于本项目；不使用未知模型服务。')
+        raise RuntimeError(t('bm_port_11435'))
     return web and ollama
 
 
@@ -89,7 +90,7 @@ class StartupMutex:
         if status not in (0, 0x80):
             kernel.CloseHandle(self.handle)
             self.handle = None
-            raise RuntimeError('另一个启动正在进行；等待超时，请查看 logs/bookmark.log。')
+            raise RuntimeError(t('bm_busy'))
         return self
 
     def __exit__(self, *args):
@@ -99,31 +100,31 @@ class StartupMutex:
 
 def open_on_demand(session, launch, open_page, deadline_seconds=240):
     if services_ready(session):
-        log('服务已在运行，直接打开网页。')
+        log(t('bm_running'))
         open_page(WEB_URL)
         return
     owner = ROOT / 'logs' / 'bookmark-service.json'
     process = None
     if project_process(owner, PYTHON, True):
-        log('先前的背景启动器仍在运行，等待服务就绪。')
+        log(t('bm_waiting_previous'))
     else:
         # A manual start.bat may already be starting; don't race it.
         pending_web = project_process(ROOT / 'logs' / 'streamlit.pid', PYTHON)
         if pending_web and not healthy(session, WEB_URL + '_stcore/health'):
-            raise RuntimeError('已有网页进程未就绪。请关闭旧 start.bat 窗口后重试。')
-        log('启动背景服务；初始化可能需要约两分钟。')
+            raise RuntimeError(t('bm_not_ready'))
+        log(t('bm_starting'))
         process = launch()
         owner.write_text(json.dumps({'root': str(ROOT), 'pid': process.pid}), encoding='utf-8')
     deadline = time.monotonic() + deadline_seconds
     while time.monotonic() < deadline:
         if services_ready(session):
-            log('服务已就绪，打开网页。')
+            log(t('bm_ready'))
             open_page(WEB_URL)
             return
         if process is not None and process.poll() is not None:
-            raise RuntimeError('背景启动器已退出，请查看 logs/startup.log。')
+            raise RuntimeError(t('bm_exited'))
         time.sleep(.5)
-    raise RuntimeError('等待服务超时，请查看 logs/startup.log 和 logs/bookmark.log。')
+    raise RuntimeError(t('bm_timeout'))
 
 
 def launch_service():
@@ -148,9 +149,9 @@ def open_chrome(url):
 
 def main():
     if len(sys.argv) != 2:
-        raise ValueError('此启动器只接受一个固定协议链接。')
+        raise ValueError(t('bm_one_link'))
     validate_uri(sys.argv[1])
-    log('收到启动链接，开始检查；若重复点击，等待前一次启动完成。')
+    log(t('bm_received'))
     session = requests.Session()
     session.trust_env = False
     with StartupMutex():
@@ -162,5 +163,5 @@ if __name__ == '__main__':
         main()
     except Exception as exc:
         log(traceback.format_exc())
-        ctypes.windll.user32.MessageBoxW(None, str(exc), 'VideoSummarizer 启动失败', 0x10)
+        ctypes.windll.user32.MessageBoxW(None, str(exc), t('bm_failed_title'), 0x10)
         sys.exit(1)

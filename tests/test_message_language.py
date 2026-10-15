@@ -7,14 +7,15 @@ from opencc import OpenCC
 
 ROOT = Path(__file__).resolve().parents[1]
 # i18n converts its Simplified source text per language; local_llm swaps the zh-TW prompt by matching both names.
-INTENTIONAL = {'i18n.py', 'local_llm.py'}
+# setup_text.py and packaging/Launcher.cs hold explicit Traditional columns, checked in test_setup_text.
+INTENTIONAL = {'i18n.py', 'local_llm.py', 'setup_text.py'}
 CJK = re.compile(r'[一-鿿]')
 
 
 class MessageLanguageTests(unittest.TestCase):
     def test_hard_coded_messages_use_simplified_chinese(self):
         t2s = OpenCC('t2s')
-        sources = [*ROOT.glob('*.py'), *ROOT.glob('scripts/*.py'), ROOT / 'packaging/Launcher.cs']
+        sources = [*ROOT.glob('*.py'), *ROOT.glob('scripts/*.py')]
         found = []
         for path in sources:
             if path.name in INTENTIONAL:
