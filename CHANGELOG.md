@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.11 — 2026-10-16
+
+Downloads ride out short network drops. When a transfer stops part-way, yt-dlp already resumes from the part saved on disk, but it gave up after 2 immediate retries; it now retries up to 10 times, waiting 1, 2, 4 ... up to 30 seconds in between. When a download still fails because the connection was interrupted, timed out or could not be made, the page now says the network was briefly unstable and to try again, instead of suggesting a yt-dlp update and a restart. Other platform errors keep the update advice. This was found on v0.3.10, where a Bilibili audio transfer stopped part-way and worked on the next try.
+
 ## 0.3.10 — 2026-10-15
 
 The first-time setup window now lets you choose Simplified Chinese (the default), Traditional Chinese or English, and switching updates the window at once. The choice is saved as the page language. Setup progress, the network check, the GPU, yt-dlp and Whisper installers and the launchers all use it, as does the web page; changing the page language later changes them too. Their messages come from a new standard-library-only table, so they work before OpenCC is installed, and the Traditional Chinese text equals the page's own OpenCC conversion. The `update-ytdlp.bat` menu and the source edition's `install-gpu.bat` prompt moved into Python, so they follow the language.
