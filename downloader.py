@@ -23,9 +23,15 @@ def validate_url(url):
     return url
 
 
+def retry_wait(attempt):
+    # Interrupted transfers resume from the saved part; wait 1, 2, 4 ... up to 30 s for the network to recover.
+    return min(2 ** attempt, 30)
+
+
 def options(task):
     result = {'quiet': True, 'noprogress': True, 'no_warnings': False, 'noplaylist': True, 'playlist_items': '1',
-            'socket_timeout': 30, 'retries': 2, 'fragment_retries': 2,
+            'socket_timeout': 30, 'retries': 10, 'fragment_retries': 10,
+            'retry_sleep_functions': {'http': retry_wait, 'fragment': retry_wait},
             'outtmpl': str(task / 'media.%(ext)s'), 'ffmpeg_location': ffmpeg(),
             'progress_hooks': [lambda _: guard()], 'continuedl': False,
             'overwrites': False, 'concurrent_fragment_downloads': 1,

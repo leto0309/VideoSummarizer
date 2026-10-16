@@ -1,5 +1,6 @@
 """Translate application-owned text before inserting original source evidence."""
 from functools import lru_cache
+import re
 from opencc import OpenCC
 
 LANGUAGES = ('zh-CN', 'zh-TW', 'en')
@@ -85,6 +86,7 @@ TEXT = {
  'error_whisper': ('Whisper small 未就绪或下载失败。请运行 prepare-whisper.bat；无法连接时可复制 models/whisper。切换 CPU 不会修复模型下载。详细原因记录于 logs/app-errors.log。', 'Whisper small is not ready or its download failed. Run prepare-whisper.bat or copy models/whisper. Switching to CPU cannot fix a model download. Details are in logs/app-errors.log.'),
  'error_url': ('请输入可合法访问的 HTTPS Bilibili、b23.tv 或 YouTube 链接。', 'Enter a legally accessible HTTPS Bilibili, b23.tv or YouTube URL.'),
  'error_no_media': ('视频平台这次没有提供可下载的音频或视频。B 站有时会暂时限制未登录的访问，请过一段时间再试；仍然失败时，双击软件文件夹里的 update-ytdlp.bat 更新下载组件，重启电脑后再试。本工具不会登录或绕过平台限制。详细原因记录于 logs/app-errors.log。', 'The platform did not offer any downloadable audio or video this time. Bilibili sometimes temporarily limits access without login, so try again later. If it keeps failing, double-click update-ytdlp.bat in the application folder to update the download component, restart the computer and try again. This tool does not log in or bypass platform limits. Details are in logs/app-errors.log.'),
+ 'error_network': ('下载中途连接中断或超时，通常是网络暂时不稳定。请稍后再点一次「开始生成摘要」；不需要更新下载组件。详细原因记录于 logs/app-errors.log。', 'The download was interrupted or timed out, usually because the network was briefly unstable. Click "Generate summary" again in a moment; the download component does not need an update. Details are in logs/app-errors.log.'),
  'error_platform': ('无法从视频平台读取这个视频。平台可能已经改版：请双击软件文件夹里的 update-ytdlp.bat 更新下载组件，重启电脑后再试。需要登录、付费或已删除的视频无法处理。详细原因记录于 logs/app-errors.log。', 'Could not read this video from the platform. The platform may have changed: double-click update-ytdlp.bat in the application folder to update the download component, restart the computer and try again. Videos that need login or payment, or were removed, cannot be processed. Details are in logs/app-errors.log.'),
 }
 
@@ -110,6 +112,11 @@ def tr(locale, key, **values):
         template = template.replace('簡體中文', '繁體中文')
     return template.format(**values)
 
+# yt-dlp reports these when a transfer stops part-way or the connection fails, after its own retries.
+NETWORK_ERROR = re.compile(r'bytes read, \d+ more expected|timed out|getaddrinfo failed|Remote end closed|'
+                           r'Connection (?:reset|aborted|refused)|IncompleteRead|10054|10060', re.IGNORECASE)
+
+
 def friendly_error(error, language):
     text = str(error)
     if any(text == tr(code, 'busy') for code in LANGUAGES):
@@ -123,5 +130,5 @@ def friendly_error(error, language):
     if 'Ollama' in text or '下载本机模型' in text or '11435' in text:
         return tr(language, 'error_model')
     if type(error).__module__.startswith('yt_dlp'):
-        return tr(language, 'error_platform')
+        return tr(language, 'error_network' if NETWORK_ERROR.search(text) else 'error_platform')
     return tr(language, 'error_generic')
